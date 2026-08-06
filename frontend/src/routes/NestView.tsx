@@ -1,14 +1,17 @@
 import { Navigate, Link, useParams } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { Users } from 'lucide-react'
+import { IconButton, tabTriggerClass } from '@/components/ui'
 import { MessageList } from '@/components/chat/MessageList'
 import { Composer } from '@/components/chat/Composer'
 import { ParticipantTile } from '@/components/meet/ParticipantTile'
 import { ToastStack, useToasts } from '@/components/meet/Toasts'
 import { MembersDialog } from '@/components/nest/MembersDialog'
+import { RenameNestDialog } from '@/components/nest/RenameNestDialog'
 import { useAuth } from '@/lib/auth'
 import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
 import { nestIdentity } from '@/lib/nest-identity'
+import { cn } from '@/lib/cn'
 import type { Message } from '@/lib/types'
 
 const REJECTION_COPY: Record<DoghouseRejection, string> = {
@@ -48,28 +51,27 @@ export function NestView() {
   function handleSendToDoghouse(targetUserId: string) {
     const rejection = store.sendToDoghouse(nest!.id, targetUserId)
     if (rejection) {
-      pushToast(REJECTION_COPY[rejection])
+      pushToast(REJECTION_COPY[rejection], 'warning')
       return
     }
     const target = usersById.get(targetUserId)
-    pushToast(`🐍 Everyone: shh... we're talking about ${target?.name ?? 'them'} 🤫`)
+    pushToast(`Everyone: shh... we're talking about ${target?.name ?? 'them'} 🤫`, 'doghouse')
   }
 
   return (
     <div className="flex min-h-full flex-col">
       <header className="flex items-center gap-3 border-b border-border p-4">
-        <span className="text-xl">{identity.icon}</span>
-        <h1 className="text-base font-semibold">{identity.name}</h1>
+        <RenameNestDialog nest={nest} suggestedName={identity.name} />
         <nav className="ml-auto flex items-center gap-3">
           <MembersDialog
             nest={nest}
             actorUserId={user.id}
-            onRejected={pushToast}
+            onRejected={(message) => pushToast(message, 'warning')}
             trigger={
-              <button aria-label="View people" className="flex items-center gap-1 text-fg-muted hover:text-fg">
+              <IconButton aria-label="View people" size="sm" className="w-auto gap-1 px-1.5">
                 <Users size={16} />
                 <span className="text-xs">{members.length || nest.memberIds.length}</span>
-              </button>
+              </IconButton>
             }
           />
           <div className="flex gap-1">
@@ -126,10 +128,7 @@ export function NestView() {
 
 function TabLink({ nestId, view, active, label }: { nestId: string; view: string; active: boolean; label: string }) {
   return (
-    <Link
-      to={`/nests/${nestId}/${view}`}
-      className={`rounded-md px-3 py-1.5 text-sm ${active ? 'bg-elevated text-fg' : 'text-fg-muted hover:text-fg'}`}
-    >
+    <Link to={`/nests/${nestId}/${view}`} className={cn('flex-1', tabTriggerClass(active))}>
       {label}
     </Link>
   )

@@ -1,5 +1,7 @@
 import { Mic, MicOff } from 'lucide-react'
-import { Toggle } from '@/components/ui'
+import { Avatar, Toggle } from '@/components/ui'
+import { cn } from '@/lib/cn'
+import { DOGHOUSE_DURATION_MS } from '@/lib/nest-store'
 import type { Participant, User } from '@/lib/types'
 
 const MS_PER_SECOND = 1_000
@@ -27,16 +29,28 @@ export function ParticipantTile({
 }: ParticipantTileProps) {
   const isBenched = Boolean(participant.doghouseUntil && participant.doghouseUntil > now)
   const secondsLeft = isBenched ? Math.ceil((participant.doghouseUntil! - now) / MS_PER_SECOND) : 0
+  const percentRemaining = isBenched ? Math.round(((participant.doghouseUntil! - now) / DOGHOUSE_DURATION_MS) * 100) : 0
 
   return (
     <div
-      className={`relative flex flex-col items-center gap-2 rounded-lg border p-5 text-center transition-opacity ${
-        isBenched ? 'border-doghouse opacity-60 grayscale' : 'border-border'
-      }`}
+      key={participant.doghouseUntil ?? 'idle'}
+      className={cn(
+        'relative flex flex-col items-center gap-2 rounded-lg border p-5 text-center transition-[opacity,filter,border-color] duration-slow ease-standard',
+        isBenched ? 'border-doghouse opacity-60 grayscale animate-doghouse-enter' : 'border-border',
+      )}
     >
       {isBenched && <span className="absolute right-3 top-2 text-xs font-semibold text-doghouse">{secondsLeft}s</span>}
       {isBenched ? <MicOff size={24} className="text-doghouse" /> : <Mic size={24} className="text-fg-muted" />}
-      <span className="text-4xl">{user.avatar}</span>
+      {isBenched ? (
+        <span
+          className="rounded-full p-0.5 transition-[background] duration-base"
+          style={{ background: `conic-gradient(var(--color-doghouse) ${percentRemaining}%, transparent ${percentRemaining}%)` }}
+        >
+          <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
+        </span>
+      ) : (
+        <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
+      )}
       <span className="text-sm font-medium">
         {user.name}
         {isSelf ? ' (you)' : ''}

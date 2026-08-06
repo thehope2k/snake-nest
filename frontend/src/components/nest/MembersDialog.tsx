@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Check, Copy, MoreHorizontal } from 'lucide-react'
 import {
+  Avatar,
   Button,
   Dialog,
   DialogContent,
@@ -9,6 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  IconButton,
   Input,
 } from '@/components/ui'
 import type { Nest, User } from '@/lib/types'
@@ -98,7 +100,7 @@ export function MembersDialog({ nest, actorUserId, trigger, onRejected }: Member
                   searchResults.map((candidate) => (
                     <li key={candidate.id} className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-elevated">
                       <span className="flex items-center gap-2 text-sm">
-                        <span className="text-lg">{candidate.avatar}</span>
+                        <Avatar name={candidate.name} seed={candidate.id} emoji={candidate.avatar} size="sm" />
                         {candidate.name}
                       </span>
                       <Button
@@ -124,16 +126,16 @@ export function MembersDialog({ nest, actorUserId, trigger, onRejected }: Member
                   className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-elevated"
                 >
                   <span className="flex items-center gap-2 text-sm">
-                    <span className="text-lg">{member.avatar}</span>
+                    <Avatar name={member.name} seed={member.id} emoji={member.avatar} size="sm" />
                     {member.name}
                     {member.id === nest.ownerId && <span className="text-xs text-fg-subtle">owner</span>}
                   </span>
                   {isOwner && member.id !== nest.ownerId && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button aria-label={`More options for ${member.name}`} className="text-fg-subtle hover:text-fg">
+                        <IconButton aria-label={`More options for ${member.name}`} size="sm">
                           <MoreHorizontal size={16} />
-                        </button>
+                        </IconButton>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
                         <DropdownMenuItem destructive onSelect={() => handleRemove(member.id)}>
@@ -153,9 +155,9 @@ export function MembersDialog({ nest, actorUserId, trigger, onRejected }: Member
                 <p className="text-xs text-fg-subtle">Invite code</p>
                 <p className="font-mono text-sm tracking-wider">{inviteCode}</p>
               </div>
-              <button onClick={copyInviteCode} aria-label="Copy invite code" className="text-fg-muted hover:text-fg">
+              <IconButton onClick={copyInviteCode} aria-label="Copy invite code" size="sm">
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-              </button>
+              </IconButton>
             </div>
           )}
         </div>

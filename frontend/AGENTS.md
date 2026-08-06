@@ -34,6 +34,35 @@ Full rationale for tone/personality: [../docs/product/ux-philosophy.md](../docs/
   derived the same way, not new arbitrary hex values.
 - **No new base color literals** without a strong reason — derive from
   the three base values instead.
+- Shadow, motion, and type-scale tokens follow the same rule: no
+  arbitrary values picked per component. Shadow (`--shadow-sm/md/lg`)
+  is a fixed 3-step scale, opacity derived from `--foreground` so it
+  stays correct if the theme ever changes. Motion
+  (`--duration-fast/base/slow`, one shared easing curve) is defined
+  once and reused, not re-typed as inline `duration-150` etc. per
+  component. Type scale (`--text-xs` through `--text-2xl`) gives every
+  heading/label a scale step to pick from instead of defaulting to
+  `text-sm` everywhere regardless of role.
+- Respect `prefers-reduced-motion` at the token layer (transitions
+  collapse to ~0), not per-component checks.
+
+## Iconography & identity
+
+Mixing a real icon library with decorative emoji ad hoc is the fastest
+way to make the UI look inconsistent — pick one deliberately per case:
+
+- **`lucide-react`** is for functional chrome: buttons, actions, status
+  (mic, reply, close, more-options, etc.). Pick icon sizes from a fixed
+  scale (`14` / `16` / `20`), never a one-off number per file.
+- **Emoji are reserved for personality/identity moments** named in
+  [ux-philosophy.md](../docs/product/ux-philosophy.md) — a Nest's
+  chosen icon, a user's chosen avatar emoji, the Doghouse voice. They
+  are not a substitute for a real icon on a functional control.
+- **Avatars are never a bare emoji `<span>`.** Use the `Avatar`
+  primitive: it derives a background color deterministically from the
+  user's id (so the same person always gets the same color) and falls
+  back to initials when there's no emoji. Its prop shape stays open to
+  an optional future `imageUrl` — don't design around "emoji forever."
 
 ## Component library rule
 
@@ -48,9 +77,19 @@ Full rationale for tone/personality: [../docs/product/ux-philosophy.md](../docs/
    import from one place: `import { Button, Field } from '@/components/ui'`.
 5. Don't recreate a hard primitive (Dialog w/ focus trap, Combobox) from
    scratch — pull one in from Radix and note the addition here.
+6. Icon-only controls use `IconButton`, never a raw `<button>` with
+   ad-hoc padding — it guarantees a consistent hit target and a visible
+   focus ring.
+7. A tab/segmented-control UI (mode switch, view switch) uses `Tabs`,
+   not a hand-rolled `flex` of styled buttons — there should be exactly
+   one implementation of "a row of mutually exclusive options."
+8. Toast/status messaging uses a `tone` prop (`neutral` / `success` /
+   `warning` / `doghouse`, matching `BadgeTone`'s shape) rather than a
+   bespoke class string per call site.
 
 **Starter primitive set** (build these before feature screens, since the
-working style is UI-first): `Button`, `Input`, `Field`, `Badge`, `Toggle`.
+working style is UI-first): `Button`, `Input`, `Field`, `Badge`, `Toggle`,
+`Avatar`, `IconButton`, `Tabs`.
 
 ## Component file size
 

@@ -1,10 +1,10 @@
 import { useState, type ReactNode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Dialog, DialogContent, DialogTrigger, Field, Input } from '@/components/ui'
+import { CirclePlus } from 'lucide-react'
+import { Button, Dialog, DialogContent, DialogTrigger, Field, Input, Tabs } from '@/components/ui'
 import { useNestStore } from '@/lib/nest-store'
 import { ApiError } from '@/lib/api-client'
-
-const NEST_ICONS = ['🐍', '📚', '🏋️', '🎮', '🎧']
+import { NEST_ICONS } from '@/lib/nest-icons'
 
 type Mode = 'create' | 'join'
 
@@ -54,24 +54,24 @@ export function CreateNestDialog({ trigger }: CreateNestDialogProps) {
         if (!next) reset()
       }}
     >
-      <DialogTrigger asChild>{trigger ?? <Button>Create a Nest</Button>}</DialogTrigger>
+      <DialogTrigger asChild>
+        {trigger ?? (
+          <Button>
+            <CirclePlus size={16} />
+            Create a Nest
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent title={mode === 'create' ? 'Create a Nest' : 'Join a Nest'}>
-        <div className="mb-4 flex gap-1 rounded-md bg-elevated p-1 text-sm">
-          <button
-            type="button"
-            onClick={() => setMode('create')}
-            className={`flex-1 rounded px-2 py-1 ${mode === 'create' ? 'bg-elevated-2 text-fg' : 'text-fg-muted'}`}
-          >
-            Create
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode('join')}
-            className={`flex-1 rounded px-2 py-1 ${mode === 'join' ? 'bg-elevated-2 text-fg' : 'text-fg-muted'}`}
-          >
-            Join with code
-          </button>
-        </div>
+        <Tabs
+          className="mb-4"
+          value={mode}
+          onValueChange={setMode}
+          items={[
+            { value: 'create', label: 'Create' },
+            { value: 'join', label: 'Join with code' },
+          ]}
+        />
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {mode === 'create' ? (

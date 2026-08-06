@@ -1,17 +1,22 @@
 import { useEffect } from 'react'
-import { LogOut, MessageSquarePlus, Plus } from 'lucide-react'
+import { CirclePlus, LogOut, MessageSquarePlus } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
+import { Avatar, Badge, IconButton } from '@/components/ui'
 import { CreateNestDialog } from '@/components/nest/CreateNestDialog'
 import { NewMessageDialog } from '@/components/nest/NewMessageDialog'
 import { useAuth } from '@/lib/auth'
 import { useNestStore } from '@/lib/nest-store'
+import { useNestActivity } from '@/lib/useNestActivity'
 import { nestIdentity } from '@/lib/nest-identity'
 import { cn } from '@/lib/cn'
+
+const MAX_UNREAD_DISPLAY = 9
 
 export function NestSidebar() {
   const { user, signOut } = useAuth()
   const { nests, membersFor, loadMembers } = useNestStore()
   const { nestId: activeNestId } = useParams<{ nestId?: string }>()
+  const { unreadCountFor } = useNestActivity(activeNestId)
 
   useEffect(() => {
     nests.filter((nest) => !nest.name).forEach((nest) => loadMembers(nest.id))
@@ -22,19 +27,19 @@ export function NestSidebar() {
     <aside className="flex h-full flex-col bg-panel">
       <div className="flex items-center justify-between border-b border-border p-3">
         <span className="text-sm font-semibold">🐍 The Nest</span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <NewMessageDialog
             trigger={
-              <button aria-label="New message" className="text-fg-muted hover:text-fg">
+              <IconButton aria-label="New message">
                 <MessageSquarePlus size={16} />
-              </button>
+              </IconButton>
             }
           />
           <CreateNestDialog
             trigger={
-              <button aria-label="Create a Nest" className="text-fg-muted hover:text-fg">
-                <Plus size={16} />
-              </button>
+              <IconButton aria-label="Create a Nest">
+                <CirclePlus size={16} />
+              </IconButton>
             }
           />
         </div>
@@ -46,6 +51,7 @@ export function NestSidebar() {
         ) : (
           nests.map((nest) => {
             const identity = nestIdentity(nest, membersFor(nest.id), user?.id ?? '')
+            const unreadCount = nest.id === activeNestId ? 0 : unreadCountFor(nest.id)
             return (
               <Link
                 key={nest.id}
@@ -55,8 +61,13 @@ export function NestSidebar() {
                   nest.id === activeNestId ? 'bg-elevated text-fg' : 'text-fg-muted hover:bg-elevated hover:text-fg',
                 )}
               >
-                <span className="text-base">{identity.icon}</span>
+                <Avatar name={identity.name} seed={nest.id} emoji={identity.icon} size="sm" />
                 <span className="truncate">{identity.name}</span>
+                {unreadCount > 0 && (
+                  <Badge tone="accent" className="ml-auto shrink-0">
+                    {unreadCount > MAX_UNREAD_DISPLAY ? `${MAX_UNREAD_DISPLAY}+` : unreadCount}
+                  </Badge>
+                )}
               </Link>
             )
           })
@@ -65,9 +76,9 @@ export function NestSidebar() {
 
       <div className="flex items-center justify-between border-t border-border p-3">
         <span className="truncate text-xs text-fg-muted">{user?.name}</span>
-        <button onClick={signOut} aria-label="Sign out" className="text-fg-subtle hover:text-fg-muted">
+        <IconButton onClick={signOut} aria-label="Sign out" size="sm">
           <LogOut size={15} />
-        </button>
+        </IconButton>
       </div>
     </aside>
   )

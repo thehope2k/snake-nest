@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Dialog, DialogContent, DialogTrigger, Input } from '@/components/ui'
+import { Avatar, Button, Dialog, DialogContent, DialogTrigger, Input } from '@/components/ui'
 import { useNestStore } from '@/lib/nest-store'
 import { ApiError } from '@/lib/api-client'
 import type { User } from '@/lib/types'
@@ -81,7 +81,7 @@ export function NewMessageDialog({ trigger }: NewMessageDialogProps) {
                   onClick={() => toggleSelect(person)}
                   className="flex items-center gap-1 rounded-full bg-elevated-2 px-2 py-1 text-xs hover:bg-elevated"
                 >
-                  <span>{person.avatar}</span>
+                  <Avatar name={person.name} seed={person.id} emoji={person.avatar} size="sm" />
                   {person.name}
                   <span className="text-fg-subtle">×</span>
                 </button>
@@ -103,7 +103,7 @@ export function NewMessageDialog({ trigger }: NewMessageDialogProps) {
                       onClick={() => toggleSelect(candidate)}
                       className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-elevated"
                     >
-                      <span className="text-lg">{candidate.avatar}</span>
+                      <Avatar name={candidate.name} seed={candidate.id} emoji={candidate.avatar} size="sm" />
                       {candidate.name}
                     </button>
                   </li>

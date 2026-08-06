@@ -20,3 +20,12 @@ export { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './Resizabl
 
 export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from './DropdownMenu'
 export type { DropdownMenuItemProps } from './DropdownMenu'
+
+export { Avatar } from './Avatar'
+export type { AvatarProps, AvatarSize } from './Avatar'
+
+export { IconButton, ICON_PIXEL_SIZE } from './IconButton'
+export type { IconButtonProps, IconButtonSize } from './IconButton'
+
+export { Tabs, tabTriggerClass } from './Tabs'
+export type { TabsProps, TabItem } from './Tabs'

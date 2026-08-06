@@ -15,7 +15,7 @@ import {
   startConversationRequest,
 } from './nest-api'
 
-const DOGHOUSE_DURATION_MS = 60_000
+export const DOGHOUSE_DURATION_MS = 60_000
 const DOGHOUSE_COOLDOWN_MS = 30_000
 const MAX_CONCURRENT_DOGHOUSE_RATIO = 0.5
 const TICK_INTERVAL_MS = 1_000
