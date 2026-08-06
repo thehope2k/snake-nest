@@ -158,3 +158,25 @@ platform serving many unrelated organizations at scale. That means
 normal good practice (indexes, connection pooling, not doing anything
 obviously wasteful) but no effort spent on horizontal scaling,
 multi-region deployment, or handling huge concurrent load.
+
+## How it ships
+
+`develop` is the default working branch; `main` only moves when
+something is actually meant to go live. Pushing to `main` triggers
+[.github/workflows/cd.yml](../.github/workflows/cd.yml): it builds the
+backend and frontend as Docker images, pushes them to GHCR tagged with
+the commit SHA, then SSHes into the self-hosted VM and tells
+`docker compose` (using [infra/docker-compose.prod.yml](../infra/docker-compose.prod.yml))
+to pull the new images and recreate the running containers. Every PR
+and push to `develop`/`main` also runs [.github/workflows/ci.yml](../.github/workflows/ci.yml)
+(backend tests against real Postgres/Redis service containers, frontend
+lint + typecheck + build) — that's the gate before anything reaches
+`main`.
+
+Caddy sits in front of the frontend and backend on the VM as the single
+public-facing edge — plain HTTP against the VM's bare IP by default,
+automatic HTTPS the moment a domain is pointed at it (one env var, no
+config change). LiveKit is the one piece of this still running in local
+dev's `--dev` mode with its fixed key/secret pair even in this
+production setup — generating a real key/secret pair and TURN/TLS config
+is a deliberate, tracked follow-up, not solved yet.
