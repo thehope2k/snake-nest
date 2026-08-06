@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, type UIEvent } from 'react'
 import { CornerUpLeft, Reply, Sparkles } from 'lucide-react'
 import { Avatar, EmojiPicker, EmptyState, IconButton } from '@/components/ui'
 import { cn } from '@/lib/cn'
@@ -7,6 +7,7 @@ import type { Message, User } from '@/lib/types'
 
 const QUICK_REACTIONS = ['🔥', '💀', '🐍']
 const HIGHLIGHT_MS = 1_200
+const NEAR_BOTTOM_PX = 120
 
 interface MessageListProps {
   messages: Message[]
@@ -20,12 +21,28 @@ export function MessageList({ messages, usersById, currentUserId, onReact, onRep
   const messagesById = new Map(messages.map((message) => [message.id, message]))
   const groups = groupConsecutiveByAuthor(messages)
   const messageRefs = useRef(new Map<string, HTMLDivElement>())
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const stickToBottomRef = useRef(true)
+  const isFirstScrollRef = useRef(true)
   const [highlightedId, setHighlightedId] = useState<string | null>(null)
 
   function registerRef(id: string, el: HTMLDivElement | null) {
     if (el) messageRefs.current.set(id, el)
     else messageRefs.current.delete(id)
   }
+
+  function handleScroll(event: UIEvent<HTMLDivElement>) {
+    const el = event.currentTarget
+    stickToBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX
+  }
+
+  useEffect(() => {
+    if (!stickToBottomRef.current) return
+    bottomRef.current?.scrollIntoView({ behavior: isFirstScrollRef.current ? 'auto' : 'smooth' })
+    isFirstScrollRef.current = false
+    // Only the count matters here — reactions/edits on existing messages shouldn't yank the scroll position.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length])
 
   function jumpToMessage(id: string) {
     const el = messageRefs.current.get(id)
@@ -44,7 +61,7 @@ export function MessageList({ messages, usersById, currentUserId, onReact, onRep
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
+    <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4" onScroll={handleScroll}>
       {groups.map((group) => {
         const author = usersById.get(group.authorId)
         const isSelf = group.authorId === currentUserId
@@ -77,6 +94,7 @@ export function MessageList({ messages, usersById, currentUserId, onReact, onRep
           </div>
         )
       })}
+      <div ref={bottomRef} aria-hidden="true" />
     </div>
   )
 }

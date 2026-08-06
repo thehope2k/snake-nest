@@ -71,7 +71,7 @@ export function NestView() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-full flex-col overflow-hidden">
       <header className="flex items-center gap-4 border-b border-border p-4">
         <RenameNestDialog nest={nest} suggestedName={identity.name} />
         <nav className="ml-auto flex items-center gap-3">
@@ -95,7 +95,7 @@ export function NestView() {
       </header>
 
       {view === 'meet' ? (
-        <div className="grid flex-1 grid-cols-2 gap-4 content-start p-6 sm:grid-cols-3">
+        <div className="grid flex-1 grid-cols-2 gap-4 content-start overflow-y-auto p-6 sm:grid-cols-3">
           {participants.map((participant) => {
             const participantUser = usersById.get(participant.userId)
             if (!participantUser) return null
