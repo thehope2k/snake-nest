@@ -8,9 +8,11 @@ style) — read that too if you haven't.
 
 Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password),
 the Nest/membership domain (create, list, add/remove members, invite
-codes, direct-message/group unification), and real-time chat (send,
-reply, react, delivered live over WebSocket) all exist and are real. See
-[../docs/architecture.md](../docs/architecture.md).
+codes, direct-message/group unification), real-time chat (send,
+reply, react, delivered live over WebSocket), and Meet (join/leave a
+Nest's LiveKit call, live presence, webhook reconciliation) all exist
+and are real. See [../docs/architecture.md](../docs/architecture.md).
+Doghouse is still frontend-only fake state — not wired up yet.
 
 ## REST conventions
 
@@ -40,18 +42,42 @@ reply, react, delivered live over WebSocket) all exist and are real. See
 - **WebSocket (STOMP, SockJS fallback)** — live delivery only. Chat
   messages/reactions are written via REST first (so history always
   exists even if nobody's connected), then broadcast to
-  `/topic/nests/{nestId}/chat` for anyone subscribed. Auth on the
-  WebSocket handshake is a JWT passed as a `token` query param (browsers
-  can't set custom headers on a WebSocket handshake) via
-  `JwtHandshakeInterceptor`; a `ChannelInterceptor`
-  (`ChatChannelInterceptor`) checks Nest membership on every SUBSCRIBE,
-  not just at connect time, so someone removed from a Nest mid-session
-  can't keep listening in.
-- **LiveKit server SDK** — issues short-lived join tokens and executes
-  moderation actions (`mutePublishedTrack`, etc.). This is the **only**
-  path for forced mute/moderation actions — see the non-negotiable
-  constraint in [../AGENTS.md](../AGENTS.md): never rely on client-only
-  mute state.
+  `/topic/nests/{nestId}/chat` for anyone subscribed; Meet presence
+  (participant joined/left) broadcasts the same way to
+  `/topic/nests/{nestId}/meet`. Auth on the WebSocket handshake is a JWT
+  passed as a `token` query param (browsers can't set custom headers on
+  a WebSocket handshake) via `JwtHandshakeInterceptor`; a
+  `ChannelInterceptor` (`NestTopicChannelInterceptor`) checks Nest
+  membership on every SUBSCRIBE to either topic, not just at connect
+  time, so someone removed from a Nest mid-session can't keep listening
+  in.
+- **LiveKit server SDK** — issues short-lived, room-scoped join tokens
+  (room = `nest-{nestId}`, identity = the user's id) and executes
+  moderation actions (`mutePublishedTrack`, etc., once Doghouse is
+  wired). This is the **only** path for forced mute/moderation actions —
+  see the non-negotiable constraint in [../AGENTS.md](../AGENTS.md):
+  never rely on client-only mute state.
+- **LiveKit webhooks** — the one intentionally unauthenticated (JWT-wise)
+  endpoint in the app, `POST /api/v1/webhooks/livekit`. It's exempted by
+  exact path in `SecurityConfig`, never by wildcard, and verifies the
+  request itself via `WebhookReceiver`'s HMAC-signed JWT + body-hash
+  check instead of our own `JwtAuthFilter`. It exists because a Meet
+  participant can vanish without ever calling `/meet/leave` (crash,
+  closed tab) — LiveKit's `participant_left`/`room_finished` events are
+  the only reliable way to reconcile Redis presence in that case.
+
+## Meet presence
+
+- Presence is **ephemeral only** — a Redis hash per Nest
+  (`meet:{nestId}:participants`, userId → joined-at epoch millis), no
+  Postgres table. This matches Meet being a drop-in call with no
+  scheduling or history requirement (see
+  [../docs/product/scope.md](../docs/product/scope.md)); don't add a
+  call-history table without that being a deliberate, separate product
+  decision.
+- `MeetService` is the only thing that touches that Redis key or mints
+  LiveKit tokens — `MeetController` is a thin pass-through, same shape
+  as `ChatController`.
 
 ## The Doghouse state machine
 

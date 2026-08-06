@@ -12,9 +12,15 @@ Provides:
   durable data (users, Nests, chat history, scores). See
   [../docs/architecture.md](../docs/architecture.md).
 - **Redis** (`localhost:6379`) — presence, Doghouse timers, pub/sub.
+- **LiveKit** (`localhost:7880` signaling, `7881` TCP + `7882/udp` for
+  media) — the self-hosted SFU behind Meet, running in `--dev` mode with
+  its fixed `devkey`/`secret` pair. **Local dev only** — a real
+  deployment needs its own generated key/secret and a proper LiveKit
+  config (TURN, TLS), not `--dev` mode.
 - **Backend** (`localhost:8080`) — the Spring Boot app itself, built from
-  [../backend/Dockerfile](../backend/Dockerfile), wired to the `postgres`
-  and `redis` services above by container name (not `localhost`).
+  [../backend/Dockerfile](../backend/Dockerfile), wired to the `postgres`,
+  `redis`, and `livekit` services above by container name (not
+  `localhost`).
 
 This means the usual dev loop is:
 
@@ -29,10 +35,8 @@ Rebuild the backend image after a code change:
 docker compose up -d --build backend
 ```
 
-LiveKit isn't included yet — it'll be added once Meet actually needs it.
-See [../docs/architecture.md](../docs/architecture.md).
-
-These credentials (Postgres, JWT secret) are **local development
-defaults only** — real deployments must override `DB_PASSWORD`,
-`JWT_SECRET`, and `CORS_ALLOWED_ORIGINS` via environment variables. See
+These credentials (Postgres, JWT secret, LiveKit key/secret) are **local
+development defaults only** — real deployments must override
+`DB_PASSWORD`, `JWT_SECRET`, `LIVEKIT_API_KEY`/`LIVEKIT_API_SECRET`, and
+`CORS_ALLOWED_ORIGINS` via environment variables. See
 [../AGENTS.md](../AGENTS.md) on not committing secrets.

@@ -1,7 +1,6 @@
 package io.snakenest.nest.config;
 
 import io.snakenest.nest.auth.JwtService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +16,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final JwtService jwtService;
-    private final ChatChannelInterceptor chatChannelInterceptor;
+    private final NestTopicChannelInterceptor nestTopicChannelInterceptor;
 
     @Value("${nest.cors.allowed-origins}")
     private String allowedOrigins;
@@ -39,6 +38,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(chatChannelInterceptor);
+        registration.interceptors(nestTopicChannelInterceptor);
     }
 }

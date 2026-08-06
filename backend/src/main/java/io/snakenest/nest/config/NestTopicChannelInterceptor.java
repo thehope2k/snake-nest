@@ -17,9 +17,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ChatChannelInterceptor implements ChannelInterceptor {
+public class NestTopicChannelInterceptor implements ChannelInterceptor {
 
-    private static final Pattern NEST_TOPIC = Pattern.compile("^/topic/nests/([^/]+)/chat$");
+    private static final Pattern NEST_TOPIC = Pattern.compile("^/topic/nests/([^/]+)/(chat|meet)$");
 
     private final NestMembershipRepository membershipRepository;
 

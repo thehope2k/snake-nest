@@ -16,16 +16,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping(ApiPaths.V1)
 @RequiredArgsConstructor
 public class ChatController {
 
     private final ChatService chatService;
 
-    @GetMapping(ApiPaths.V1 + "/nests/{nestId}/messages")
+    @GetMapping("/nests/{nestId}/messages")
     public ResponseEntity<List<MessageResponse>> listMessages(
             @PathVariable UUID nestId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant before,
@@ -34,13 +36,13 @@ public class ChatController {
         return ResponseEntity.ok(chatService.listMessages(nestId, userId(auth), before, limit));
     }
 
-    @PostMapping(ApiPaths.V1 + "/nests/{nestId}/messages")
+    @PostMapping("/nests/{nestId}/messages")
     public ResponseEntity<MessageResponse> sendMessage(
             @PathVariable UUID nestId, @Valid @RequestBody SendMessageRequest request, Authentication auth) {
         return ResponseEntity.ok(chatService.sendMessage(nestId, userId(auth), request));
     }
 
-    @PostMapping(ApiPaths.V1 + "/messages/{messageId}/reactions")
+    @PostMapping("/messages/{messageId}/reactions")
     public ResponseEntity<MessageResponse> toggleReaction(
             @PathVariable UUID messageId, @Valid @RequestBody ToggleReactionRequest request, Authentication auth) {
         return ResponseEntity.ok(chatService.toggleReaction(messageId, userId(auth), request.emoji()));

@@ -17,10 +17,12 @@ graph TB
 
     subgraph Backend["Spring Boot Backend"]
         REST[REST API<br/>auth, Nests, membership]
-        WSGW[WebSocket Gateway<br/>live chat]
+        MEET[Meet service<br/>presence + join tokens]
+        WSGW[WebSocket Gateway<br/>live chat + Meet presence]
         AUTH[JWT auth]
-        LKSERVER[LiveKit Server SDK<br/>token + moderation]
+        LKSERVER[LiveKit Server SDK<br/>tokens, webhooks, moderation]
         MODSVC[Doghouse<br/>state machine]
+        HOOK[LiveKit webhook endpoint<br/>signature-verified, not JWT]
     end
 
     subgraph LiveKit["LiveKit (self-hosted)"]
@@ -28,32 +30,39 @@ graph TB
     end
 
     subgraph Data["Data Layer"]
-        PG[(PostgreSQL<br/>users, Nests, membership)]
-        REDIS[(Redis<br/>presence, Doghouse timers, pub/sub)]
+        PG[(PostgreSQL<br/>users, Nests, chat history)]
+        REDIS[(Redis<br/>Meet presence, Doghouse timers, pub/sub)]
     end
 
     UI --> REST
+    UI --> MEET
     UI --> WS
     UI --> LKSDK
     LKSDK <--> SFU
     WS <--> WSGW
     REST --> AUTH
     REST --> PG
+    MEET --> AUTH
+    MEET --> REDIS
+    MEET --> LKSERVER
     WSGW --> REDIS
     MODSVC --> LKSERVER
     MODSVC --> REDIS
     LKSERVER --> SFU
+    SFU --> HOOK
+    HOOK --> MEET
 ```
 
 A React frontend talks to a Spring Boot backend over REST and, now,
 over a live WebSocket connection too. Login/signup, creating and joining
-Nests, adding and removing people, and now real chat — sending messages,
-replies, and reactions, delivered live to everyone in the Nest — are all
-real, backed by Postgres.
+Nests, adding and removing people, real chat — sending messages,
+replies, and reactions, delivered live to everyone in the Nest — and now
+Meet — joining/leaving a Nest's drop-in call, backed by a self-hosted
+LiveKit SFU — are all real, backed by Postgres and Redis.
 
-Voice meetings and the Doghouse mute feature are designed and built in
-the frontend already, but still run on fake, in-memory data rather than
-talking to a server — that's the next piece to wire up.
+The Doghouse mute feature is designed and built in the frontend already,
+but still runs on fake, in-memory data rather than talking to a server —
+that's the next piece to wire up.
 
 ## The stack
 
@@ -70,11 +79,16 @@ talking to a server — that's the next piece to wire up.
   (STOMP), no polling. Joining a Nest's chat means subscribing to that
   Nest's own channel, and the server checks you're actually a member
   before letting the subscription through.
-- **Voice/video**: will run on LiveKit, self-hosted. Not connected yet.
+- **Voice/video**: runs on LiveKit, self-hosted (`--dev` mode locally, a
+  real deployment needs its own key/secret and TURN/TLS config). The
+  backend never talks to the SFU's media path directly — it only mints
+  short-lived, room-scoped join tokens via the LiveKit server SDK and
+  receives signed webhooks back for reconciliation.
 - **PostgreSQL** holds anything that needs to last: accounts, Nests,
-  who's in them, and eventually chat history.
-- **Redis** will hold anything short-lived: who's currently online, an
-  active Doghouse countdown, that kind of thing. Not in use yet.
+  who's in them, and chat history.
+- **Redis** holds anything short-lived: who's currently in a Meet call
+  right now (a hash per Nest, `meet:{nestId}:participants`), and
+  eventually an active Doghouse countdown.
 
 ## How the product is modeled
 
@@ -100,7 +114,25 @@ talking to a server — that's the next piece to wire up.
   removes it, it doesn't double-count) and message history can be paged
   back through rather than loading everything at once.
 - **Meet** is a casual, drop-in voice/video call tied to a Nest — not
-  something you schedule ahead of time. Not hooked up to LiveKit yet.
+  something you schedule ahead of time. Joining posts to the backend,
+  which checks you're actually a member of the Nest, registers your
+  presence in Redis, and hands back a short-lived LiveKit join token
+  scoped to that Nest's room and your identity only. Everyone else in
+  the Nest sees you join/leave live over the same WebSocket pattern
+  Chat uses (`/topic/nests/{nestId}/meet`). Presence is ephemeral by
+  design — there's no call history table, matching Meet's drop-in
+  nature — and if a participant's browser vanishes without calling
+  "leave" (a crash, a closed tab), a signed webhook from LiveKit itself
+  reconciles the Redis state rather than leaving a stale participant
+  behind. Because dropping into a call isn't meant to pull you away
+  from anything else, being on a Meet call isn't tied to having that
+  Nest's screen open: once joined, the frontend keeps the call running
+  as a small floating control that follows you around the app,
+  including while you're looking at a different Nest entirely. That
+  means the LiveKit client connection is owned above any single Nest's
+  screen (at the app-shell level), not created and destroyed as you
+  navigate between Nests, and the Nest list needs a way to show which
+  other Nest currently has a call running before you switch to it.
 - **Doghouse** is the signature bit: during a call, you can send someone
   to the "doghouse," which mutes them for everyone to see, for a set
   amount of time — like saying "we're talking about you" out loud
@@ -108,9 +140,15 @@ talking to a server — that's the next piece to wire up.
   attached: a cooldown so people can't be piled on, a cap on how many
   people can be muted at once, a personal opt-out that's always
   respected, and a way for the Nest's owner to let someone out early.
-  Right now this all runs in the browser as a simulation; the real
-  version needs to live on the server (a Redis-backed timer, an actual
-  LiveKit mute) so it can't be faked and survives a page refresh.
+  Because a call can be visible from anywhere in the app now, not just
+  from that Nest's own screen, the mute has to render in that same
+  floating control too — if the target had wandered off to another
+  Nest, hiding the mute there would let it happen without them actually
+  seeing it, which defeats the entire point of doing it out loud
+  instead of secretly. Right now this all runs in the browser as a
+  simulation; the real version needs to live on the server (a
+  Redis-backed timer, an actual LiveKit mute) so it can't be faked and
+  survives a page refresh.
 
 ## How big this needs to be
 
