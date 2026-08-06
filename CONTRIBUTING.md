@@ -22,7 +22,6 @@ snake-nest/
 │   ├── architecture.md   what the system does and how it works
 │   ├── product/          scope, principles, glossary, UX philosophy
 │   └── engineering/       conventions
-├── mockup/               early static prototype (reference only, superseded by frontend/)
 ├── frontend/             React app
 ├── backend/              Spring Boot app
 └── infra/                docker-compose (Postgres, Redis, backend container)

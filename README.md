@@ -19,9 +19,10 @@ product surfaces instead of an afterthought. Full reasoning in
 ## Status
 
 Auth, the Nest/membership domain (create, join, invite codes,
-direct-message/group unification), and a working frontend exist and run
-in Docker. Real-time chat delivery, LiveKit/Meet integration, and the
-Doghouse mechanic are still client-simulated — see
+direct-message/group unification), real-time chat (send, reply, react,
+delivered live over WebSocket), and Meet (join/leave a Nest's
+self-hosted LiveKit call, live presence) all exist and run in Docker.
+Doghouse is still client-simulated — see
 [docs/architecture.md](docs/architecture.md) for exactly what's built vs.
 planned.
 
@@ -42,7 +43,6 @@ snake-nest/
 │   ├── architecture.md   system design, stack, domain model
 │   ├── product/          scope, principles, glossary, UX philosophy
 │   └── engineering/       conventions
-├── mockup/               static HTML/CSS/JS clickable prototype (superseded by frontend/)
 ├── frontend/             React app
 ├── backend/              Spring Boot app
 ├── infra/                docker-compose (Postgres, Redis, backend container)
@@ -59,8 +59,8 @@ cd ../frontend && npm run dev              # frontend, run manually
 
 ## Tech stack
 
-React · Spring Boot (REST, WebSocket/STOMP planned) · LiveKit (self-hosted, not yet integrated) · PostgreSQL (via
-Liquibase) · Redis (not yet used). Full rationale in [docs/architecture.md](docs/architecture.md).
+React · Spring Boot (REST + WebSocket/STOMP) · LiveKit (self-hosted) · PostgreSQL (via Liquibase) · Redis. Full
+rationale in [docs/architecture.md](docs/architecture.md).
 
 ## License
 
