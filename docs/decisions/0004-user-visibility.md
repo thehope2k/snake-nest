@@ -1,6 +1,6 @@
 # 0004: Shared-Nest user visibility
 
-Status: Accepted
+Status: Superseded by [0006-global-user-visibility.md](0006-global-user-visibility.md)
 
 ## Context
 

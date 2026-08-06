@@ -7,8 +7,8 @@ style) — read that too if you haven't.
 ## Status
 
 Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password)
-and the User entity exist; Nest/membership domain is next — see
-[../docs/roadmap.md](../docs/roadmap.md) Phase 1.
+and the Nest/membership domain (create, list, add/remove members, invite
+codes) exist. See [../docs/roadmap.md](../docs/roadmap.md) Phase 1.
 
 ## REST conventions
 
@@ -64,6 +64,20 @@ Must be **server-owned**, not tracked only in a client's memory:
   fanning out events across backend instances (relevant the moment
   there's more than one instance — not premature if the pub/sub layer
   is already in place for presence).
+- **Schema changes go through Liquibase changesets**
+  (`src/main/resources/db/changelog/`), never `ddl-auto`. `ddl-auto` is
+  set to `validate` — Hibernate checks entities match the schema but
+  never mutates it. Reason: `ddl-auto: update` silently failed to add a
+  `NOT NULL UNIQUE` column to an already-populated table during early
+  development — no error, just a column that never existed, discovered
+  only when a later query broke. Liquibase makes schema changes explicit,
+  ordered, and reproducible instead.
+  - One file per changeset under `db/changelog/`, numbered
+    (`00N-description.yaml`), included from `db.changelog-master.yaml` in
+    order. **Never edit an already-applied changeset** — add a new one,
+    same discipline as ADRs.
+  - After adding/changing an entity, add the matching changeset in the
+    same commit — don't let entities and schema drift apart.
 
 ## Logging
 

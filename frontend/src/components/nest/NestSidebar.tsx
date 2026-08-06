@@ -9,7 +9,6 @@ export function NestSidebar() {
   const { user, signOut } = useAuth()
   const { nests } = useNestStore()
   const { nestId: activeNestId } = useParams<{ nestId?: string }>()
-  const myNests = nests.filter((nest) => user && nest.memberIds.includes(user.id))
 
   return (
     <aside className="flex h-full flex-col bg-panel">
@@ -25,10 +24,10 @@ export function NestSidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
-        {myNests.length === 0 ? (
+        {nests.length === 0 ? (
           <p className="p-2 text-xs text-fg-subtle">No Nests yet — create one.</p>
         ) : (
-          myNests.map((nest) => (
+          nests.map((nest) => (
             <Link
               key={nest.id}
               to={`/nests/${nest.id}/chat`}

@@ -25,10 +25,16 @@ export function NestView() {
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
 
   const nest = store.nests.find((n) => n.id === nestId)
-  const usersById = useMemo(() => new Map(store.users.map((u) => [u.id, u])), [store.users])
+  const members = store.membersFor(nestId ?? '')
+  const usersById = useMemo(() => new Map(members.map((u) => [u.id, u])), [members])
 
   useEffect(() => {
     setReplyingTo(null)
+  }, [nestId])
+
+  useEffect(() => {
+    if (nestId) store.loadMembers(nestId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nestId])
 
   if (!nest || !user) return <Navigate to="/nests" replace />
@@ -60,7 +66,7 @@ export function NestView() {
             trigger={
               <button aria-label="View people" className="flex items-center gap-1 text-fg-muted hover:text-fg">
                 <Users size={16} />
-                <span className="text-xs">{nest.memberIds.length}</span>
+                <span className="text-xs">{members.length || nest.memberIds.length}</span>
               </button>
             }
           />

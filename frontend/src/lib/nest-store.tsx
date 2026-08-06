@@ -1,7 +1,16 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Message, Nest, Participant, Reaction, User } from './types'
-import { MOCK_MESSAGES, MOCK_NESTS, MOCK_USERS, seedParticipants } from './mock-data'
 import { useAuth } from './auth'
+import {
+  addMemberRequest,
+  createNestRequest,
+  getInviteCodeRequest,
+  joinNestRequest,
+  listMembersRequest,
+  listNestsRequest,
+  removeMemberRequest,
+  searchUsersRequest,
+} from './nest-api'
 
 const DOGHOUSE_DURATION_MS = 60_000
 const DOGHOUSE_COOLDOWN_MS = 30_000
@@ -9,40 +18,52 @@ const MAX_CONCURRENT_DOGHOUSE_RATIO = 0.5
 const TICK_INTERVAL_MS = 1_000
 
 export type DoghouseRejection = 'opted-out' | 'already-benched' | 'on-cooldown' | 'nest-full'
-export type RemoveMemberRejection = 'not-owner' | 'cannot-remove-owner'
 
 interface NestStoreValue {
   nests: Nest[]
-  users: typeof MOCK_USERS
   now: number
+  refreshNests: () => Promise<void>
+  createNest: (name: string, icon: string) => Promise<Nest>
+  joinNest: (code: string) => Promise<Nest>
+  membersFor: (nestId: string) => User[]
+  loadMembers: (nestId: string) => Promise<void>
+  searchUsers: (nestId: string, query: string) => Promise<User[]>
+  addMember: (nestId: string, userId: string) => Promise<void>
+  removeMember: (nestId: string, userId: string) => Promise<void>
+  getInviteCode: (nestId: string) => Promise<string>
   messagesFor: (nestId: string) => Message[]
   participantsFor: (nestId: string) => Participant[]
-  createNest: (name: string, icon: string) => Nest
   sendMessage: (nestId: string, authorId: string, text: string, replyToId?: string | null) => void
   addReaction: (nestId: string, messageId: string, emoji: string) => void
   sendToDoghouse: (nestId: string, targetUserId: string) => DoghouseRejection | null
   releaseFromDoghouse: (nestId: string, targetUserId: string) => void
   setDoghouseOptOut: (nestId: string, userId: string, optOut: boolean) => void
-  addMember: (nestId: string, userId: string) => void
-  removeMember: (nestId: string, actorUserId: string, targetUserId: string) => RemoveMemberRejection | null
-  visibleContactsFor: (userId: string) => User[]
 }
 
 const NestStoreContext = createContext<NestStoreValue | null>(null)
+
+const EMPTY_USERS: User[] = []
 
 function maxConcurrentFor(memberCount: number): number {
   return Math.max(1, Math.floor(memberCount * MAX_CONCURRENT_DOGHOUSE_RATIO))
 }
 
+function seedParticipants(members: User[]): Participant[] {
+  return members.map((member) => ({
+    userId: member.id,
+    doghouseUntil: null,
+    cooldownUntil: null,
+    doghouseOptOut: false,
+    doghouseCount: 0,
+  }))
+}
+
 export function NestStoreProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth()
-  const [nests, setNests] = useState<Nest[]>(MOCK_NESTS)
-  const [messagesByNest, setMessagesByNest] = useState<Record<string, Message[]>>(() =>
-    Object.fromEntries(MOCK_NESTS.map((nest) => [nest.id, MOCK_MESSAGES.filter((m) => m.nestId === nest.id)])),
-  )
-  const [participantsByNest, setParticipantsByNest] = useState<Record<string, Participant[]>>(() =>
-    Object.fromEntries(MOCK_NESTS.map((nest) => [nest.id, seedParticipants(nest)])),
-  )
+  const { user, token } = useAuth()
+  const [nests, setNests] = useState<Nest[]>([])
+  const [membersByNest, setMembersByNest] = useState<Record<string, User[]>>({})
+  const [messagesByNest, setMessagesByNest] = useState<Record<string, Message[]>>({})
+  const [participantsByNest, setParticipantsByNest] = useState<Record<string, Participant[]>>({})
   const [now, setNow] = useState(() => Date.now())
 
   useEffect(() => {
@@ -54,11 +75,62 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     setParticipantsByNest((current) => releaseExpired(current, now))
   }, [now])
 
+  const refreshNests = useCallback(async () => {
+    if (!token) return
+    setNests(await listNestsRequest(token))
+  }, [token])
+
   useEffect(() => {
-    if (!user) return
-    setNests((current) => joinCurrentUser(current, user.id))
-    setParticipantsByNest((current) => addUserToAllParticipants(current, user.id))
-  }, [user])
+    if (user && token) refreshNests()
+  }, [user, token, refreshNests])
+
+  function requireToken(): string {
+    if (!token) throw new Error('Not signed in')
+    return token
+  }
+
+  async function createNest(name: string, icon: string): Promise<Nest> {
+    const nest = await createNestRequest(requireToken(), name, icon)
+    setNests((current) => [...current, nest])
+    return nest
+  }
+
+  async function joinNest(code: string): Promise<Nest> {
+    const nest = await joinNestRequest(requireToken(), code)
+    setNests((current) => (current.some((n) => n.id === nest.id) ? current : [...current, nest]))
+    return nest
+  }
+
+  function membersFor(nestId: string): User[] {
+    return membersByNest[nestId] ?? EMPTY_USERS
+  }
+
+  async function loadMembers(nestId: string): Promise<void> {
+    const members = await listMembersRequest(requireToken(), nestId)
+    setMembersByNest((current) => ({ ...current, [nestId]: members }))
+    setParticipantsByNest((current) => ({
+      ...current,
+      [nestId]: syncParticipants(current[nestId] ?? [], members),
+    }))
+  }
+
+  function searchUsers(nestId: string, query: string): Promise<User[]> {
+    return searchUsersRequest(requireToken(), nestId, query)
+  }
+
+  async function addMember(nestId: string, userId: string): Promise<void> {
+    await addMemberRequest(requireToken(), nestId, userId)
+    await loadMembers(nestId)
+  }
+
+  async function removeMember(nestId: string, userId: string): Promise<void> {
+    await removeMemberRequest(requireToken(), nestId, userId)
+    await loadMembers(nestId)
+  }
+
+  function getInviteCode(nestId: string): Promise<string> {
+    return getInviteCodeRequest(requireToken(), nestId)
+  }
 
   function messagesFor(nestId: string): Message[] {
     return messagesByNest[nestId] ?? []
@@ -66,15 +138,6 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
 
   function participantsFor(nestId: string): Participant[] {
     return participantsByNest[nestId] ?? []
-  }
-
-  function createNest(name: string, icon: string): Nest {
-    if (!user) throw new Error('createNest requires a signed-in user')
-    const nest: Nest = { id: crypto.randomUUID(), name, icon, ownerId: user.id, memberIds: [user.id] }
-    setNests((current) => [...current, nest])
-    setMessagesByNest((current) => ({ ...current, [nest.id]: [] }))
-    setParticipantsByNest((current) => ({ ...current, [nest.id]: seedParticipants(nest) }))
-    return nest
   }
 
   function sendMessage(nestId: string, authorId: string, text: string, replyToId: string | null = null) {
@@ -137,68 +200,36 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     }))
   }
 
-  function addMember(nestId: string, userId: string) {
-    setNests((current) =>
-      current.map((nest) =>
-        nest.id === nestId && !nest.memberIds.includes(userId)
-          ? { ...nest, memberIds: [...nest.memberIds, userId] }
-          : nest,
-      ),
-    )
-    setParticipantsByNest((current) => {
-      const participants = current[nestId] ?? []
-      if (participants.some((p) => p.userId === userId)) return current
-      const joined: Participant = { userId, doghouseUntil: null, cooldownUntil: null, doghouseOptOut: false, doghouseCount: 0 }
-      return { ...current, [nestId]: [...participants, joined] }
-    })
-  }
-
-  function removeMember(nestId: string, actorUserId: string, targetUserId: string): RemoveMemberRejection | null {
-    const nest = nests.find((n) => n.id === nestId)
-    if (!nest) return null
-    if (nest.ownerId !== actorUserId) return 'not-owner'
-    if (nest.ownerId === targetUserId) return 'cannot-remove-owner'
-
-    setNests((current) =>
-      current.map((n) => (n.id === nestId ? { ...n, memberIds: n.memberIds.filter((id) => id !== targetUserId) } : n)),
-    )
-    setParticipantsByNest((current) => ({
-      ...current,
-      [nestId]: (current[nestId] ?? []).filter((p) => p.userId !== targetUserId),
-    }))
-    return null
-  }
-
-  function visibleContactsFor(userId: string): User[] {
-    const sharedNestIds = nests.filter((nest) => nest.memberIds.includes(userId)).map((nest) => nest.id)
-    const contactIds = new Set<string>()
-    for (const nest of nests) {
-      if (!sharedNestIds.includes(nest.id)) continue
-      for (const memberId of nest.memberIds) {
-        if (memberId !== userId) contactIds.add(memberId)
-      }
-    }
-    return MOCK_USERS.filter((u) => contactIds.has(u.id))
-  }
-
   const value: NestStoreValue = {
     nests,
-    users: MOCK_USERS,
     now,
+    refreshNests,
+    createNest,
+    joinNest,
+    membersFor,
+    loadMembers,
+    searchUsers,
+    addMember,
+    removeMember,
+    getInviteCode,
     messagesFor,
     participantsFor,
-    createNest,
     sendMessage,
     addReaction,
     sendToDoghouse,
     releaseFromDoghouse,
     setDoghouseOptOut,
-    addMember,
-    removeMember,
-    visibleContactsFor,
   }
 
   return <NestStoreContext.Provider value={value}>{children}</NestStoreContext.Provider>
+}
+
+function syncParticipants(current: Participant[], members: User[]): Participant[] {
+  const memberIds = new Set(members.map((m) => m.id))
+  const kept = current.filter((p) => memberIds.has(p.userId))
+  const knownIds = new Set(kept.map((p) => p.userId))
+  const added = seedParticipants(members.filter((m) => !knownIds.has(m.id)))
+  return [...kept, ...added]
 }
 
 function releaseExpired(byNest: Record<string, Participant[]>, now: number): Record<string, Participant[]> {
@@ -216,22 +247,6 @@ function releaseExpired(byNest: Record<string, Participant[]>, now: number): Rec
     }),
   )
   return changed ? next : byNest
-}
-
-function joinCurrentUser(nests: Nest[], userId: string): Nest[] {
-  return nests.map((nest) =>
-    nest.memberIds.includes(userId) ? nest : { ...nest, memberIds: [...nest.memberIds, userId] },
-  )
-}
-
-function addUserToAllParticipants(byNest: Record<string, Participant[]>, userId: string): Record<string, Participant[]> {
-  return Object.fromEntries(
-    Object.entries(byNest).map(([nestId, participants]) => {
-      if (participants.some((p) => p.userId === userId)) return [nestId, participants]
-      const joined: Participant = { userId, doghouseUntil: null, cooldownUntil: null, doghouseOptOut: false, doghouseCount: 0 }
-      return [nestId, [...participants, joined]]
-    }),
-  )
 }
 
 function bumpReaction(reactions: Reaction[], emoji: string): Reaction[] {

@@ -30,13 +30,15 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     throw new ApiError(response.status, message)
   }
 
-  if (response.status === 204) return undefined as T
-  return (await response.json()) as T
+  const text = await response.text()
+  if (!text) return undefined as T
+  return JSON.parse(text) as T
 }
 
 async function extractErrorMessage(response: Response): Promise<string> {
   try {
-    const body = (await response.json()) as { message?: string }
+    const text = await response.text()
+    const body = JSON.parse(text) as { message?: string }
     return body.message ?? response.statusText
   } catch {
     return response.statusText

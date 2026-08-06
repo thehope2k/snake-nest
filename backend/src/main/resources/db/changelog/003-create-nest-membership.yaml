@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-nest-membership
+      author: nest
+      changes:
+        - createTable:
+            tableName: nest_membership
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: nest_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: joined_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: nest_membership
+            columnNames: nest_id, user_id
+            constraintName: uk_nest_membership_nest_user
