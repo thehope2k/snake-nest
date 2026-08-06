@@ -20,6 +20,13 @@
 		reverse_proxy backend:8080
 	}
 
+	# LiveKit's browser-facing signaling channel. The client connects here
+	# directly (see LIVEKIT_URL in .env.example) -- media itself still flows
+	# over the separately published TCP/UDP ports, this is just signaling.
+	handle /rtc/* {
+		reverse_proxy livekit:7880
+	}
+
 	handle {
 		reverse_proxy frontend:80
 	}
