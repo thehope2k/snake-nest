@@ -1,49 +1,55 @@
 # Engineering conventions
 
-## Commit style
+## Commits
 
 Conventional-commit-style prefixes: `feat:`, `fix:`, `docs:`, `chore:`,
 `refactor:`.
 
-Commits authored with AI agent assistance carry a co-author trailer:
+## How docs work here
 
-```
-Co-Authored-By: Minimalist Agent <noreply@minimalist-agent.local>
-```
+[`docs/architecture.md`](../architecture.md) should always answer two
+questions — what does this do, and how does it do that — for the system
+as it actually is *right now*. Not a history of how we got here, not a
+log of decisions and why they were made, not a running list of what's
+done vs. not done.
 
-## Documentation
+That doesn't mean everything has to live in one file forever. If a part
+of the system gets substantial enough that cramming it into
+`architecture.md` would make the whole thing unreadable, split it into
+its own doc under `docs/` — that's completely fine. The test isn't "how
+many files," it's what kind of content the file holds:
 
-- `docs/product/` — durable product definition (scope, principles,
-  glossary). Update when scope or principles genuinely change, not for
-  every feature detail.
-- `docs/features/` — one file per pillar (`chat.md`, `meet.md`), each
-  listing sub-features with a status (💡 idea / 📐 spec'd / 🚧 in progress
-  / ✅ shipped). Sub-feature detail lives inline once spec'd, not before.
-- `docs/decisions/` — Architecture Decision Records (ADRs) for
-  significant, hard-to-reverse choices. Numbered sequentially, status
-  field (`Proposed` / `Accepted` / `Superseded`). Don't retroactively
-  edit an accepted ADR's decision — write a new one that supersedes it.
-- `docs/engineering/` — architecture and conventions, kept current with
-  actual implementation once it exists.
+- **Describes what exists right now, in plain terms?** Fine, as its own
+  doc if it's substantial enough to deserve one.
+- **Records why a choice was made, or tracks status/progress over
+  time?** That's the pattern to avoid, whether it's one file or five —
+  it's the part that goes stale. `docs/features/chat.md` used to say
+  "not implemented" long after auth, Nests, and membership were fully
+  working, because nobody remembered to update a status field once the
+  code moved past it.
+
+Alongside `architecture.md`, `docs/product/` holds the durable product
+thinking — scope, principles, glossary, UX philosophy. Update these when
+the product's intent actually changes, not for every small feature.
+
+**Write docs like you're explaining the project to a person, not
+generating a spec.** Plain sentences, not a wall of nested bullets.
+Someone should be able to read a doc start to finish without feeling
+like they're parsing a technical report.
+
+**Docs are not optional follow-up.** If a change alters what the system
+does or how it's put together, the relevant doc gets updated in the same
+piece of work — not "later," not as a separate pass. A change that isn't
+reflected in the docs isn't finished.
 
 ## Per-app conventions
 
-Detailed FE/BE conventions live next to the code they govern, not here —
-keeps them granular and auto-discovered by agents working in that folder:
+Frontend and backend each have their own `AGENTS.md` living next to the
+code they describe, so they're picked up automatically when working in
+that folder:
 
-- [../../frontend/AGENTS.md](../../frontend/AGENTS.md) — design tokens,
+- [`frontend/AGENTS.md`](../../frontend/AGENTS.md) — design tokens, the
   `components/ui/` discipline, component size, state/data conventions
-- [../../backend/AGENTS.md](../../backend/AGENTS.md) — REST/WebSocket
-  layering, the Doghouse state machine, Postgres/Redis usage, logging
-
-The stack choice rationale (why Tailwind + shadcn/ui) is in
-[../decisions/0003-frontend-stack-conventions.md](../decisions/0003-frontend-stack-conventions.md) —
-that ADR doesn't change often; the AGENTS.md files above are the ones
-that evolve as the app grows.
-
-## Code (once scaffolded)
-
-Lint rules/formatters to be defined when `frontend/` and `backend/` are
-actually scaffolded — not speculating before there's code to apply them
-to. The per-app AGENTS.md conventions above are the exception: they're
-cheap to state now and expensive to retrofit once components exist.
+- [`backend/AGENTS.md`](../../backend/AGENTS.md) — REST/WebSocket
+  layering, the Doghouse state machine, database and Redis usage,
+  logging

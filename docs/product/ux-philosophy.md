@@ -1,83 +1,66 @@
 # UX & Design Philosophy
 
-Companion to [principles.md](principles.md) (the "why") and
-[../decisions/0003-frontend-stack-conventions.md](../decisions/0003-frontend-stack-conventions.md)
-(the "how it's built") — this is the "what it should feel like."
+What the product should feel like to use, alongside [principles.md](principles.md)
+(the why) and [../architecture.md](../architecture.md) (how it's built).
 
-## The one-line brief
+## The short version
 
-**Minimalist chrome, humorous heart.** The interface itself — layout,
-spacing, chrome, iconography — stays clean, restrained, and modern.
-Personality and humor live in *moments* (copy, micro-interactions,
-specific playful features like Doghouse) — not in busy, decorated UI.
+Minimalist chrome, humorous heart. The interface itself — layout,
+spacing, icons — stays clean and restrained. The personality and jokes
+live in specific moments (a Doghouse toast, a bit of copy), not smeared
+across every corner of the UI.
 
-This is a deliberate split: a genuinely minimalist interface is what lets
-the funny moments land, because they're not competing with visual noise.
-If everything is loud, nothing is funny.
+That split is on purpose: a genuinely calm interface is what makes the
+funny moments land. If everything is loud, nothing stands out as funny.
 
-## Visual personality
+## What it should look like
 
-- Clean, modern, restrained — closer to a focused productivity tool
-  (generous whitespace, clear hierarchy, limited color use) than a
-  maximalist "gamer app" aesthetic, despite the playful feature set.
-- Color is used deliberately, not decoratively: the accent color and any
-  sub-feature tokens (e.g. "doghouse red") carry meaning — they mark
-  something as interactive or notable, not just brand flourish.
-- Iconography and copy carry the humor, not gradients/skeuomorphism/
-  cluttered decoration.
+Clean and modern — closer to a focused productivity tool than a busy
+"gamer app," even with a playful feature like Doghouse in it. Color is
+used to mean something (the accent color, a "doghouse red") rather than
+just for decoration. The humor comes through in icons and copy, not
+gradients or clutter.
 
-## Tone of voice
+## How it should talk
 
-- The product is allowed to "talk" in specific, bounded moments —
-  system messages tied to playful features (e.g. a Doghouse toast:
-  "🐍 shh... we're talking about {name}") — because that's the feature
-  itself, not incidental copy.
-- Neutral, unremarkable UI copy elsewhere (buttons, settings, empty
-  states, errors) — the app doesn't try to be funny everywhere. Restraint
-  in the boring 90% is what makes the playful 10% land.
-- Never funny at the expense of clarity — an error message is clear
-  first, personality-flavored second (if at all).
+The app is allowed to have a voice in specific moments tied to a feature
+— a Doghouse toast saying "shh, we're talking about you" — because
+that's the feature itself, not incidental flavor text. Everywhere else —
+buttons, settings, errors — the copy stays plain and out of the way.
+Staying quiet 90% of the time is what makes the loud 10% land. And
+clarity always wins over cleverness — an error message should be
+understandable before it's funny.
 
-## Theme: single (dark), for now
+## Just one theme for now
 
-Our token architecture (three base values → everything derived) makes a
-second theme *technically* cheap to add, but the real cost is ongoing:
-every future screen and sub-feature accent color would need checking in
-both themes before shipping. For a solo, self-hosted,
-good-practice-not-overengineering project, that recurring tax isn't
-worth paying without real demand for it.
-
-- Dark suits the product's personality better anyway — closer to a
-  focused tool than a light, airy consumer app.
-- Not a wall: the token model doesn't foreclose adding light mode later
-  if real demand shows up — it's just not a v1 commitment.
-- Respect OS-level forced-colors/high-contrast accessibility preferences
-  even in a single-theme app — that's an accessibility baseline, not a
-  second theme.
+Dark only, at least for now. Adding a second (light) theme is cheap to
+set up but expensive to maintain — every future screen and every new
+accent color would need checking against both. That's not worth the
+ongoing tax for a small, self-hosted project without anyone actually
+asking for it. Dark also just suits the tone better than something
+bright and airy would. This isn't a permanent decision, just not
+something worth building before there's real demand for it. Even with
+one theme, OS-level high-contrast preferences should still be respected
+— that's a baseline, not a second theme.
 
 ## Motion
 
-- Purposeful and light-touch by default (hover states, toasts,
-  transitions) — not part of the humor delivery mechanism by default.
-- The **exception** is feature-specific playful motion tied to a specific
-  bit — e.g. a Doghouse tile's grayscale/countdown transition, or a
-  toast's entrance — where a bit of personality in the motion itself is
-  the point. Even then: quick, not gimmicky or repeatedly distracting.
+Light and purposeful by default — hover states, toasts, transitions —
+not a vehicle for humor on its own. The one exception is a specific bit
+like the Doghouse tile's grayscale/countdown animation, where a little
+personality in the motion is the point. Even then, it should be quick,
+not something that gets old after the third time you see it.
 
-## Density & layout
+## Spacing
 
-- Comfortable, breathing-room spacing (minimalist implies restraint, not
-  cramming) — closer to a clean productivity app's spacing than a dense
-  chat client. *(Flagging this as a default assumption — correct me if
-  you pictured tighter, chat-app-dense spacing instead.)*
+Comfortable and roomy rather than packed tight — closer to a clean app
+than a dense chat client. (This is a starting assumption, not a fixed
+rule — worth revisiting if it ends up feeling too spacious in practice.)
 
-## Accessibility baseline
+## Accessibility
 
-- WCAG AA contrast minimum for the dark theme's token values — a real
-  constraint on token values, not an afterthought pass at the end.
-- Full keyboard navigability for every interactive primitive in
-  `components/ui/`.
-- Doghouse and other playful mechanics remain screen-reader
-  intelligible (the visible-to-target principle in
-  [principles.md](principles.md) applies to assistive tech too, not just
-  sighted users).
+Text and UI colors need to clear normal contrast standards. Everything
+interactive should be usable from a keyboard. And anything like Doghouse
+that affects another person needs to be understandable through a screen
+reader too, not just visually — the same "make it visible" principle
+applies to everyone, not just sighted users.

@@ -2,44 +2,34 @@
 
 Thanks for your interest in The Nest.
 
-## Status
+## Getting set up
 
-This project is **pre-implementation** — currently docs + a static mockup only (see [docs/roadmap.md](docs/roadmap.md)
-Phase 0). Development setup below will be filled in as `frontend/` and `backend/` get scaffolded; for now, the most
-useful contribution is feedback on
-[docs/](docs/).
-
-## Development setup (once scaffolded)
+Backend runs in Docker alongside Postgres and Redis; the frontend runs
+on its own.
 
 ```bash
 git clone https://github.com/<owner>/snake-nest.git
 cd snake-nest
-# frontend / backend setup instructions land here once scaffolded
+cd infra && docker compose up -d --build   # Postgres + Redis + backend
+cd ../frontend && npm install && npm run dev
 ```
-
-## Scripts (once scaffolded)
-
-| Command | What it does                                               |
-|---------|------------------------------------------------------------|
-| _TBD_   | Filled in alongside `frontend/` and `backend/` scaffolding |
 
 ## Project structure
 
 ```
 snake-nest/
 ├── docs/
-│   ├── product/       scope, principles, glossary
-│   ├── features/      chat.md, meet.md (pillar specs)
-│   ├── decisions/      ADRs
-│   └── engineering/    architecture, conventions
-├── mockup/            static HTML/CSS/JS clickable prototype (reference only)
-├── frontend/          React app (not yet scaffolded)
-├── backend/           Spring Boot app (not yet scaffolded)
-└── infra/             docker-compose, LiveKit config (not yet added)
+│   ├── architecture.md   what the system does and how it works
+│   ├── product/          scope, principles, glossary, UX philosophy
+│   └── engineering/       conventions
+├── mockup/               early static prototype (reference only, superseded by frontend/)
+├── frontend/             React app
+├── backend/              Spring Boot app
+└── infra/                docker-compose (Postgres, Redis, backend container)
 ```
 
-See [docs/engineering/architecture.md](docs/engineering/architecture.md)
-for the system design.
+See [docs/architecture.md](docs/architecture.md) for how it's all put
+together.
 
 ## Code conventions
 
@@ -47,24 +37,22 @@ for the system design.
 - [frontend/AGENTS.md](frontend/AGENTS.md) — UI primitives, design tokens, component size, state/data conventions.
 - [backend/AGENTS.md](backend/AGENTS.md) — REST/WebSocket layering, Doghouse state machine, logging.
 
-Key points that cut across all three:
+A few things that apply everywhere:
 
-- **Doghouse-style mechanics** — any "act on another user" feature must ship with visibility, opt-out, moderator
-  override, and anti-pile-on limits together — see [AGENTS.md](AGENTS.md) non-negotiable constraints.
-- **Comments** — don't restate the code; write a one-liner only when the *why* is non-obvious.
-- **Component size** — split files that exceed ~250 lines into a parent
-    + subdirectory.
+- Any "act on another user" mechanic (Doghouse being the obvious one) needs visibility, an opt-out, a moderator
+  override, and anti-pile-on limits shipped together — see [AGENTS.md](AGENTS.md).
+- Comments shouldn't restate the code — write one only when the *why* isn't obvious.
+- Split component files once they pass ~250 lines into a parent + subdirectory.
+- If a change alters what the system does, update [docs/architecture.md](docs/architecture.md) as part of the same
+  PR, in plain language — not a follow-up, not a status checkbox.
 
 ## Pull requests
 
 1. Fork → branch off `main`.
 2. Keep PRs small and focused — one concern per PR.
-3. If a change touches product scope or a prior architecture decision, update the relevant doc in `docs/product/` or
-   add/supersede an ADR in
-   `docs/decisions/` as part of the same PR, not as a follow-up.
+3. If a change touches product scope, update the relevant doc in `docs/product/` as part of the same PR.
 4. Open a PR with a clear description of *what* and *why*.
 
 ## Reporting bugs / proposing features
 
-Open an issue on GitHub once the repo is public. Given the pre-implementation state, feature proposals are especially
-useful as a comment against the relevant doc in `docs/features/` rather than a fresh issue with no context.
+Open an issue on GitHub.

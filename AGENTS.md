@@ -11,10 +11,10 @@ friends/workplace side-channels, with a playful sub-feature layer
 
 ## Current state
 
-**Pre-implementation.** Only docs and a static mockup exist. Do not
-assume `frontend/` or `backend/` app code exists — check before
-referencing imports, configs, or file paths that would only make sense
-post-scaffold.
+Auth, the Nest/membership domain, and a working frontend exist (see
+[docs/architecture.md](docs/architecture.md) for exactly what's real vs.
+planned). `frontend/` and `backend/` are real apps now, not placeholders
+— but still check before assuming a specific endpoint/component exists.
 
 ## Source of truth docs
 
@@ -22,28 +22,30 @@ Read these, in order, before proposing product or architecture changes:
 
 | Doc | Answers |
 |---|---|
+| [docs/architecture.md](docs/architecture.md) | System design, stack, domain model — what's built vs. planned |
 | [docs/product/scope.md](docs/product/scope.md) | What this is, who it's for, what's explicitly out |
 | [docs/product/principles.md](docs/product/principles.md) | Durable product philosophy |
 | [docs/product/ux-philosophy.md](docs/product/ux-philosophy.md) | Visual/interaction philosophy: minimalist chrome, humor in moments not decoration, single dark theme |
 | [docs/product/glossary.md](docs/product/glossary.md) | Terminology (Nest, Chat, Meet, Doghouse...) |
-| [docs/features/chat.md](docs/features/chat.md) / [meet.md](docs/features/meet.md) | Pillar + sub-feature specs, per-feature status |
-| [docs/decisions/](docs/decisions/) | ADRs — why a significant technical/product call was made |
-| [docs/engineering/architecture.md](docs/engineering/architecture.md) | Stack, system design |
-| [docs/roadmap.md](docs/roadmap.md) | Build sequencing |
 
 **Rule:** if a request conflicts with scope (e.g. a third top-level
 pillar, a tenant/org layer, native mobile) or a stated principle (e.g.
 engagement loops, removing Doghouse guardrails), **flag the conflict
 explicitly** rather than silently implementing it. A scope/principle
-change gets reflected back into `docs/product/`; a reversal of a prior
-technical decision gets a new ADR that supersedes the old one — never a
-silent edit to an already-Accepted ADR.
+change gets reflected back into `docs/product/`.
+
+**Docs must stay current.** If a change alters what the system does or
+how it's built, update [docs/architecture.md](docs/architecture.md) in
+the same piece of work, in plain, human sentences — not a status
+tracker, not a decision log, not a mirror of the code. A change isn't
+done until the docs describe it accurately. See
+[docs/engineering/conventions.md](docs/engineering/conventions.md).
 
 ## Planned stack
 
 React (`frontend/`) · Spring Boot REST + WebSocket/STOMP (`backend/`) ·
 LiveKit self-hosted · PostgreSQL · Redis. Full rationale in
-[docs/engineering/architecture.md](docs/engineering/architecture.md).
+[docs/architecture.md](docs/architecture.md).
 
 **Non-negotiable:** moderation actions (e.g. Doghouse mute) go through
 the LiveKit **server-side** SDK only — never client-only mute state.
@@ -67,7 +69,8 @@ instead so it stays the single source of truth for that app.
 ## Non-negotiable product constraints for implementation
 
 From [principles.md](docs/product/principles.md) and
-[features/meet.md](docs/features/meet.md) — don't relax for convenience:
+[architecture.md](docs/architecture.md)'s Doghouse domain model — don't
+relax for convenience:
 
 - Any "mute/bench another user" mechanic must be **visible to the
   target**, never silent.
@@ -99,5 +102,4 @@ From [principles.md](docs/product/principles.md) and
 - `mockup/` is a disposable UX reference only — port ideas into
   `frontend/` when scaffolded, don't build real logic into it.
 - No commits without explicit user confirmation.
-- Commit style and co-author trailer: see
-  [docs/engineering/conventions.md](docs/engineering/conventions.md).
+- Commit style: see [docs/engineering/conventions.md](docs/engineering/conventions.md).

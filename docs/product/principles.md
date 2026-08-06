@@ -1,34 +1,42 @@
 # Principles
 
-## Transparency over secrecy
-Playful mechanics that involve doing something *to* another person (most
-notably Doghouse) must be visible to them, not hidden. Making a
-potentially unkind act visible and consensual turns it into a shared bit
-instead of something done behind someone's back.
+## Be visible, not sneaky
 
-## Consent is a feature, not a footnote
-Any mechanic that acts on another user needs limits and an opt-out
-designed in from the start, not added after a complaint: duration caps,
-anti-pile-on cooldowns, a per-user opt-out that's silently respected, and
-a moderator override.
+If a feature lets someone do something *to* another person — muting them
+in the Doghouse, say — the target has to see it happening. Making it
+visible turns something that could feel mean into a shared joke instead
+of a thing done behind someone's back.
 
-## Simplicity by default
-Default to the flattest structure that works. Complexity (hierarchy,
-roles, permissions, extra top-level concepts) should be something the
-product grows into only when a concrete need forces it, not something
-users are greeted with on day one.
+## Consent isn't an afterthought
 
-## The playful layer is core product, not a bolt-on
-Sub-features like Doghouse, scoreboards, and AI-assisted messaging are
-designed and maintained with the same rigor as core Chat/Meet
-functionality — for this product's audience, they're not decoration.
+Anything that acts on another person needs real limits from day one, not
+bolted on after someone complains: a cap on how long it lasts, a cooldown
+so it can't be repeated endlessly, a personal opt-out that's always
+respected, and a way for a moderator to step in.
 
-## Moderation is invisible until needed
-No heavyweight roles/permissions UI by default. But every mechanic that
-can affect another person needs a real, always-available off-ramp: mute,
-report, leave, moderator override.
+## Keep it flat
+
+Default to the simplest structure that works. Hierarchy, roles,
+permissions, extra top-level sections — the product should only grow
+into that kind of complexity when there's a real reason for it, not
+because it looks more "complete" on day one.
+
+## The fun stuff is the product
+
+Doghouse, scoreboards, the AI-assisted messaging idea — these aren't
+decoration bolted onto a serious chat app. They get built and maintained
+with the same care as Chat and Meet themselves, because for the people
+this is for, they're the actual point.
+
+## Moderation stays out of the way until it's needed
+
+No heavy roles-and-permissions screen by default. But anything that can
+affect someone else needs a real way out at all times — muting, leaving,
+reporting, a moderator override.
 
 ## No dark patterns
-Growth or engagement mechanics that make the product worse for the people
-using it (guilt-based streaks, spammy notifications, engagement-maximizing
-feeds) are rejected even if they would help adoption.
+
+Nothing that makes the product worse for the people using it just to
+juice engagement numbers — no guilt-trip streaks, no spammy
+notifications, no feed designed to be addictive. Even if it would help
+growth.

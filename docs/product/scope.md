@@ -2,68 +2,66 @@
 
 ## What this is
 
-A lightweight communication platform for people who already know each
-other — a friend group, or the "fun side-channel" running alongside a
-workplace's official comms (an alternative to using Teams/Slack for the
-non-work chatter). General-purpose: not built as a private tool for one
-specific group, but not an enterprise product either.
+The Nest is a lightweight communication platform for people who already
+know each other — a friend group, or the "fun side-channel" running
+alongside a workplace's official comms, the way people use a Slack/Teams
+DM for the non-work stuff. It's meant for anyone, not built around one
+specific friend group, but it's not trying to be an enterprise product
+either.
 
-## Structural model
+## How it's structured
 
-The only structural unit is the **Nest** (see [glossary.md](glossary.md)).
-There is no tenant/organization/company layer above it. A Nest is
-simultaneously "a friend group" or "a small team's side room" — the
-platform doesn't need to know or care which. A user can belong to
-multiple Nests.
+There's exactly one kind of container: the **Nest**. No company or
+workspace layer sits above it — a Nest can be a friend group or a small
+team's side room, and the app doesn't need to tell the difference. People
+can belong to as many Nests as they want.
 
-Each Nest is a single flat space containing two views:
-- **Chat** — persistent text conversation
-- **Meet** — ad hoc voice/video session
+Every Nest is a flat space with two things in it:
 
-There is no channel tree, no per-Nest sub-categories, no roles/permissions
-system beyond a single owner/moderator per Nest. See
-[decisions/0001-navigation-model.md](../decisions/0001-navigation-model.md).
+- **Chat** — the ongoing text conversation
+- **Meet** — a voice/video call you can drop into
+
+There's no channel list inside a Nest, no sub-categories, and nothing
+resembling a permissions system beyond "the owner can do a couple of
+extra things." Simple on purpose.
 
 ## Platform
 
-Web-first, responsive. Native mobile is explicitly out of scope for now —
-not designed against for the future, just not a v1 concern.
+Web first, and responsive. Native mobile isn't part of the plan right
+now — that's not a statement against it forever, just not something
+being designed around yet.
 
-## Hosting & licensing
+## Hosting and license
 
-Open-source, published on GitHub, self-hosted (initially by the author,
-architecture should not prevent others from self-hosting their own
-instance). Not built as a SaaS the author operates for third parties, at
-least not initially.
+Open source, self-hosted. The goal is that anyone can run their own copy
+on their own server — this isn't being built as a hosted service the
+author runs for other people.
 
-## Scale target
+## How big this needs to be
 
-Single self-hosted deployment. "Good practice" engineering (indexed
-queries, connection pooling, no hardcoded single-instance assumptions that
-would be actively wrong later) — but explicitly **not** engineering for
-horizontal scale, multi-region, or high concurrency at this stage. See
-[../engineering/architecture.md](../engineering/architecture.md) for where
-this affects specific technical choices.
+Built for a single self-hosted deployment — normal good engineering
+practice (indexes, connection pooling, nothing obviously wasteful) but
+no effort spent making it scale across regions or handle huge load. See
+[../architecture.md](../architecture.md) for where that shows up in
+actual technical choices.
 
-## Product shape: two pillars only
+## Only two pillars
 
-The platform is scoped to exactly two top-level pillars:
+Everything in the product falls under one of exactly two top-level
+things:
 
 - **Chat**
 - **Meet**
 
-Everything else (Doghouse, scoreboards, soundboard, AI-assisted message
-tooling, confession booth, etc.) is a **sub-feature of one of these two
-pillars** — never a third top-level pillar. See
-[../features/chat.md](../features/chat.md) and
-[../features/meet.md](../features/meet.md).
+Anything else — Doghouse, scoreboards, a soundboard, AI-assisted
+messages, a confession booth — is a smaller feature living inside one of
+those two, never a third top-level thing of its own.
 
-## Non-goals
+## What's deliberately not here
 
-- No tenant/organization hierarchy above the Nest.
-- No native mobile app in the current scope.
-- No engineering effort toward multi-region/high-scale infrastructure.
-- No monetization or engagement-loop mechanics (streaks, guilt-based
-  notifications) — see [principles.md](principles.md).
-- No third top-level pillar beyond Chat and Meet without revisiting this
-  document first.
+- No company/workspace layer above a Nest.
+- No native mobile app, for now.
+- No effort toward multi-region or large-scale infrastructure.
+- No growth tricks that make the product worse to use — streaks, guilt
+  notifications, that kind of thing (see [principles.md](principles.md)).
+- No third top-level pillar without rethinking this document first.

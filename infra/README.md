@@ -10,7 +10,7 @@ Provides:
 
 - **PostgreSQL** (`localhost:5432`, db `nest`, user/pass `nest`/`nest`) —
   durable data (users, Nests, chat history, scores). See
-  [../docs/engineering/architecture.md](../docs/engineering/architecture.md).
+  [../docs/architecture.md](../docs/architecture.md).
 - **Redis** (`localhost:6379`) — presence, Doghouse timers, pub/sub.
 - **Backend** (`localhost:8080`) — the Spring Boot app itself, built from
   [../backend/Dockerfile](../backend/Dockerfile), wired to the `postgres`
@@ -29,8 +29,8 @@ Rebuild the backend image after a code change:
 docker compose up -d --build backend
 ```
 
-LiveKit is not yet included — added when Phase 2 (Meet MVP) begins, see
-[../docs/roadmap.md](../docs/roadmap.md).
+LiveKit isn't included yet — it'll be added once Meet actually needs it.
+See [../docs/architecture.md](../docs/architecture.md).
 
 These credentials (Postgres, JWT secret) are **local development
 defaults only** — real deployments must override `DB_PASSWORD`,

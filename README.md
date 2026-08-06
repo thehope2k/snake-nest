@@ -18,45 +18,49 @@ product surfaces instead of an afterthought. Full reasoning in
 
 ## Status
 
-📐 **Pre-implementation.** This repo currently contains product/engineering docs and a static clickable prototype
-(`mockup/`) for feel/UX only. No frontend or backend app has been scaffolded yet.
+Auth, the Nest/membership domain (create, join, invite codes,
+direct-message/group unification), and a working frontend exist and run
+in Docker. Real-time chat delivery, LiveKit/Meet integration, and the
+Doghouse mechanic are still client-simulated — see
+[docs/architecture.md](docs/architecture.md) for exactly what's built vs.
+planned.
 
 ## Start here
 
+- [docs/architecture.md](docs/architecture.md) — system design, stack, domain model (start here)
 - [docs/product/scope.md](docs/product/scope.md) — what this is, who it's for, what's out of scope
 - [docs/product/principles.md](docs/product/principles.md) — durable product principles
-- [docs/product/ux-philosophy.md](docs/product/ux-philosophy.md) — visual/interaction philosophy, single dark theme rationale, tone of voice
+- [docs/product/ux-philosophy.md](docs/product/ux-philosophy.md) — visual/interaction philosophy, tone of voice
 - [docs/product/glossary.md](docs/product/glossary.md) — terminology (Nest, Chat, Meet, Doghouse...)
-- [docs/features/chat.md](docs/features/chat.md) / [docs/features/meet.md](docs/features/meet.md) — pillar specs +
-  sub-features
-- [docs/decisions/](docs/decisions/) — architecture decision records
-- [docs/engineering/architecture.md](docs/engineering/architecture.md) — system design, stack
 - [docs/engineering/conventions.md](docs/engineering/conventions.md) — commit/doc conventions
-- [docs/roadmap.md](docs/roadmap.md) — build sequencing
 
 ## Repo layout
 
 ```
 snake-nest/
 ├── docs/
-│   ├── product/       scope, principles, glossary
-│   ├── features/      chat.md, meet.md (pillar specs)
-│   ├── decisions/      ADRs
-│   ├── engineering/    architecture, conventions
-│   └── roadmap.md
-├── mockup/            static HTML/CSS/JS clickable prototype (no build step)
-├── frontend/          React app (not yet scaffolded)
-├── backend/           Spring Boot app (not yet scaffolded)
-├── infra/             docker-compose, LiveKit config (not yet added)
-├── AGENTS.md          conventions for AI coding agents working in this repo
-└── README.md          you are here
+│   ├── architecture.md   system design, stack, domain model
+│   ├── product/          scope, principles, glossary, UX philosophy
+│   └── engineering/       conventions
+├── mockup/               static HTML/CSS/JS clickable prototype (superseded by frontend/)
+├── frontend/             React app
+├── backend/              Spring Boot app
+├── infra/                docker-compose (Postgres, Redis, backend container)
+├── AGENTS.md             conventions for AI coding agents working in this repo
+└── README.md             you are here
 ```
 
-## Tech stack (planned)
+## Running it
 
-React · Spring Boot (REST + WebSocket/STOMP) · LiveKit (self-hosted) · PostgreSQL · Redis. Rationale in
-[docs/engineering/architecture.md](docs/engineering/architecture.md) and
-[docs/decisions/](docs/decisions/).
+```bash
+cd infra && docker compose up -d --build   # Postgres + Redis + backend
+cd ../frontend && npm run dev              # frontend, run manually
+```
+
+## Tech stack
+
+React · Spring Boot (REST, WebSocket/STOMP planned) · LiveKit (self-hosted, not yet integrated) · PostgreSQL (via
+Liquibase) · Redis (not yet used). Full rationale in [docs/architecture.md](docs/architecture.md).
 
 ## License
 

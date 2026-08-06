@@ -1,11 +1,11 @@
 # frontend/
 
-Not yet scaffolded. Will hold the React app once Phase 1 (Chat MVP) begins
-— see [../docs/roadmap.md](../docs/roadmap.md).
+The React app. Auth, Nest creation/joining, and membership management
+are real and working against the backend. Chat, Meet, and Doghouse exist
+in the UI but still run on local mock data — real-time backend support
+for those is next.
 
-Planned: React + `livekit-client` / `@livekit/components-react` for
-meeting UI, plus custom components for the playful mechanics (Doghouse
-tiles, scoreboard, soundboard). See
-[../docs/engineering/architecture.md](../docs/engineering/architecture.md).
+See [../docs/architecture.md](../docs/architecture.md) for how it all
+fits together.
 
 Conventions for this app specifically: [AGENTS.md](AGENTS.md).

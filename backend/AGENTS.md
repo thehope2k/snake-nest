@@ -8,7 +8,8 @@ style) — read that too if you haven't.
 
 Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password)
 and the Nest/membership domain (create, list, add/remove members, invite
-codes) exist. See [../docs/roadmap.md](../docs/roadmap.md) Phase 1.
+codes, direct-message/group unification) exist and are real. See
+[../docs/architecture.md](../docs/architecture.md).
 
 ## REST conventions
 
@@ -34,7 +35,7 @@ codes) exist. See [../docs/roadmap.md](../docs/roadmap.md) Phase 1.
 ## Layering
 
 - **REST** — durable CRUD only: users, Nests, message history, scores.
-  See [../docs/engineering/architecture.md](../docs/engineering/architecture.md).
+  See [../docs/architecture.md](../docs/architecture.md).
 - **WebSocket (STOMP/SockJS)** — live chat delivery and broadcasting
   moderation events (e.g. "X was sent to the Doghouse") to clients in a
   Nest. Don't push durable-data changes over REST *and* WebSocket
@@ -53,7 +54,7 @@ Must be **server-owned**, not tracked only in a client's memory:
 - Expiry (keyspace notification or short poll) triggers the unmute call
   through the LiveKit server SDK + broadcasts the "let back in" event.
 - Guardrails (cooldown, max concurrent, opt-out, moderator override —
-  see [../docs/features/meet.md](../docs/features/meet.md)) are enforced
+  see [../docs/architecture.md](../docs/architecture.md)) are enforced
   **in this service**, not left to the frontend to respect voluntarily.
   A client that ignores the cooldown must still be rejected server-side.
 
@@ -74,8 +75,8 @@ Must be **server-owned**, not tracked only in a client's memory:
   ordered, and reproducible instead.
   - One file per changeset under `db/changelog/`, numbered
     (`00N-description.yaml`), included from `db.changelog-master.yaml` in
-    order. **Never edit an already-applied changeset** — add a new one,
-    same discipline as ADRs.
+    order. **Never edit an already-applied changeset** — add a new one
+    instead.
   - After adding/changing an entity, add the matching changeset in the
     same commit — don't let entities and schema drift apart.
 

@@ -1,8 +1,9 @@
 # backend/
 
-Spring Boot 4.1.0 (Java 21, Maven). REST API + WebSocket/STOMP gateway,
-LiveKit server SDK integration, Doghouse moderation state machine. See
-[../docs/engineering/architecture.md](../docs/engineering/architecture.md).
+Spring Boot 4.1.0 (Java 21, Maven). Auth and the Nest/membership API are
+real and working. WebSocket chat delivery, LiveKit integration, and the
+server-owned Doghouse state machine are next. See
+[../docs/architecture.md](../docs/architecture.md).
 
 ## Running
 
