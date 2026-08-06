@@ -133,6 +133,12 @@ that's the next piece to wire up.
   screen (at the app-shell level), not created and destroyed as you
   navigate between Nests, and the Nest list needs a way to show which
   other Nest currently has a call running before you switch to it.
+  Mic starts on when you join; camera starts off and is a manual
+  toggle, so joining a casual call never surprises anyone with an
+  unannounced camera. The floating control's collapsed pill is meant
+  for ambient awareness only; an expand action opens a larger view with
+  real video tiles at a usable size for actually looking at people, and
+  collapses back down to the pill rather than being a separate page.
 - **Doghouse** is the signature bit: during a call, you can send someone
   to the "doghouse," which mutes them for everyone to see, for a set
   amount of time — like saying "we're talking about you" out loud

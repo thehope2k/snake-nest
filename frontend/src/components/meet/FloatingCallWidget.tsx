@@ -1,16 +1,14 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { RoomAudioRenderer, RoomContext, useLocalParticipant, useParticipants } from '@livekit/components-react'
-import { ChevronDown, ChevronUp, Mic, MicOff, PhoneOff } from 'lucide-react'
-import { Avatar, Badge, IconButton } from '@/components/ui'
+import { RoomAudioRenderer, RoomContext, useLocalParticipant, useParticipants, useTracks } from '@livekit/components-react'
+import { Track } from 'livekit-client'
+import { Camera, CameraOff, Maximize2, Mic, MicOff, PhoneOff } from 'lucide-react'
+import { Avatar, Badge, Dialog, DialogContent, DialogTrigger, IconButton } from '@/components/ui'
 import { ParticipantTile } from './ParticipantTile'
 import { ToastStack, useToasts } from './Toasts'
 import { useMeetCall } from '@/lib/meet-call'
 import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
 import { useAuth } from '@/lib/auth'
 import { nestIdentity } from '@/lib/nest-identity'
-
-const EXPANDED_MAX_HEIGHT_PX = 320
 
 const REJECTION_COPY: Record<DoghouseRejection, string> = {
   'opted-out': 'They opted out of the Doghouse — respected, no exceptions.',
@@ -37,13 +35,13 @@ export function FloatingCallWidget() {
 }
 
 function ActiveCallPanel({ nestId }: { nestId: string }) {
-  const [expanded, setExpanded] = useState(false)
   const { user } = useAuth()
   const navigate = useNavigate()
   const store = useNestStore()
   const { leaveCall } = useMeetCall()
   const liveParticipants = useParticipants()
-  const { isMicrophoneEnabled, localParticipant } = useLocalParticipant()
+  const cameraTracks = useTracks([Track.Source.Camera])
+  const { isMicrophoneEnabled, isCameraEnabled, localParticipant } = useLocalParticipant()
   const { toasts, pushToast, dismiss } = useToasts()
 
   const nest = store.nests.find((n) => n.id === nestId)
@@ -53,6 +51,7 @@ function ActiveCallPanel({ nestId }: { nestId: string }) {
 
   const usersById = new Map(members.map((member) => [member.id, member]))
   const doghouseByUserId = new Map(store.participantsFor(nestId).map((participant) => [participant.userId, participant]))
+  const cameraTrackByIdentity = new Map(cameraTracks.map((track) => [track.participant.identity, track]))
   const identity = nestIdentity(nest, members, user.id)
   const isOwner = nest.ownerId === user.id
 
@@ -65,6 +64,30 @@ function ActiveCallPanel({ nestId }: { nestId: string }) {
     const target = usersById.get(targetUserId)
     pushToast(`Everyone: shh... we're talking about ${target?.name ?? 'them'} 🤫`, 'doghouse')
   }
+
+  const grid = (
+    <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-4">
+      {liveParticipants.map((participant) => {
+        const person = usersById.get(participant.identity)
+        const doghouseState = doghouseByUserId.get(participant.identity)
+        if (!person || !doghouseState) return null
+        return (
+          <ParticipantTile
+            key={participant.identity}
+            user={person}
+            participant={doghouseState}
+            now={store.now}
+            isSelf={participant.identity === user.id}
+            canRelease={isOwner}
+            videoTrackRef={cameraTrackByIdentity.get(participant.identity)}
+            onSendToDoghouse={() => handleSendToDoghouse(participant.identity)}
+            onRelease={() => store.releaseFromDoghouse(nestId, participant.identity)}
+            onToggleOptOut={(optOut) => store.setDoghouseOptOut(nestId, participant.identity, optOut)}
+          />
+        )
+      })}
+    </div>
+  )
 
   return (
     <div className="fixed bottom-4 right-4 z-40 w-80 rounded-lg border border-border bg-panel shadow-lg">
@@ -87,39 +110,48 @@ function ActiveCallPanel({ nestId }: { nestId: string }) {
         >
           {isMicrophoneEnabled ? <Mic size={16} /> : <MicOff size={16} className="text-doghouse" />}
         </IconButton>
-        <IconButton aria-label={expanded ? 'Collapse call' : 'Expand call'} size="sm" onClick={() => setExpanded((value) => !value)}>
-          {expanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+        <IconButton
+          aria-label={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+          size="sm"
+          onClick={() => localParticipant.setCameraEnabled(!isCameraEnabled)}
+        >
+          {isCameraEnabled ? <Camera size={16} /> : <CameraOff size={16} className="text-fg-subtle" />}
         </IconButton>
+        <Dialog>
+          <DialogTrigger asChild>
+            <IconButton aria-label="Expand call">
+              <Maximize2 size={16} />
+            </IconButton>
+          </DialogTrigger>
+          <DialogContent title={identity.name} size="full">
+            <div className="mb-3 flex shrink-0 items-center gap-2">
+              <Badge tone="success">{liveParticipants.length} on a call</Badge>
+              <IconButton
+                aria-label={isMicrophoneEnabled ? 'Mute microphone' : 'Unmute microphone'}
+                size="sm"
+                className="ml-auto"
+                onClick={() => localParticipant.setMicrophoneEnabled(!isMicrophoneEnabled)}
+              >
+                {isMicrophoneEnabled ? <Mic size={16} /> : <MicOff size={16} className="text-doghouse" />}
+              </IconButton>
+              <IconButton
+                aria-label={isCameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+                size="sm"
+                onClick={() => localParticipant.setCameraEnabled(!isCameraEnabled)}
+              >
+                {isCameraEnabled ? <Camera size={16} /> : <CameraOff size={16} className="text-fg-subtle" />}
+              </IconButton>
+              <IconButton aria-label="Leave call" size="sm" onClick={() => leaveCall()} className="text-doghouse hover:text-doghouse">
+                <PhoneOff size={16} />
+              </IconButton>
+            </div>
+            {grid}
+          </DialogContent>
+        </Dialog>
         <IconButton aria-label="Leave call" size="sm" onClick={() => leaveCall()} className="text-doghouse hover:text-doghouse">
           <PhoneOff size={16} />
         </IconButton>
       </div>
-
-      {expanded && (
-        <div
-          className="grid grid-cols-2 gap-2 overflow-y-auto border-t border-border p-3"
-          style={{ maxHeight: EXPANDED_MAX_HEIGHT_PX }}
-        >
-          {liveParticipants.map((participant) => {
-            const person = usersById.get(participant.identity)
-            const doghouseState = doghouseByUserId.get(participant.identity)
-            if (!person || !doghouseState) return null
-            return (
-              <ParticipantTile
-                key={participant.identity}
-                user={person}
-                participant={doghouseState}
-                now={store.now}
-                isSelf={participant.identity === user.id}
-                canRelease={isOwner}
-                onSendToDoghouse={() => handleSendToDoghouse(participant.identity)}
-                onRelease={() => store.releaseFromDoghouse(nestId, participant.identity)}
-                onToggleOptOut={(optOut) => store.setDoghouseOptOut(nestId, participant.identity, optOut)}
-              />
-            )
-          })}
-        </div>
-      )}
 
       <ToastStack toasts={toasts} dismiss={dismiss} />
     </div>

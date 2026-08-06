@@ -1,4 +1,5 @@
 import { Mic, MicOff } from 'lucide-react'
+import { VideoTrack, type TrackReference } from '@livekit/components-react'
 import { Avatar, Button, Toggle } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import { DOGHOUSE_DURATION_MS } from '@/lib/nest-store'
@@ -12,6 +13,7 @@ interface ParticipantTileProps {
   now: number
   isSelf: boolean
   canRelease: boolean
+  videoTrackRef?: TrackReference
   onSendToDoghouse: () => void
   onRelease: () => void
   onToggleOptOut: (optOut: boolean) => void
@@ -23,6 +25,7 @@ export function ParticipantTile({
   now,
   isSelf,
   canRelease,
+  videoTrackRef,
   onSendToDoghouse,
   onRelease,
   onToggleOptOut,
@@ -40,21 +43,35 @@ export function ParticipantTile({
       )}
     >
       {isBenched && <span className="absolute right-3 top-2 text-xs font-semibold text-doghouse">{secondsLeft}s</span>}
-      {isBenched ? <MicOff size={24} className="text-doghouse" /> : <Mic size={24} className="text-fg-muted" />}
-      {isBenched ? (
-        <span
-          className="rounded-full p-0.5 transition-[background] duration-base"
-          style={{ background: `conic-gradient(var(--color-doghouse) ${percentRemaining}%, transparent ${percentRemaining}%)` }}
-        >
-          <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
-        </span>
+
+      {videoTrackRef ? (
+        <div className="relative aspect-video w-full overflow-hidden rounded-md bg-elevated-2">
+          <VideoTrack trackRef={videoTrackRef} className={cn('h-full w-full object-cover', isBenched && 'grayscale')} />
+          <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+            {isBenched ? <MicOff size={12} className="text-doghouse" /> : <Mic size={12} />}
+            {user.name}
+            {isSelf ? ' (you)' : ''}
+          </span>
+        </div>
       ) : (
-        <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
+        <>
+          {isBenched ? <MicOff size={24} className="text-doghouse" /> : <Mic size={24} className="text-fg-muted" />}
+          {isBenched ? (
+            <span
+              className="rounded-full p-0.5 transition-[background] duration-base"
+              style={{ background: `conic-gradient(var(--color-doghouse) ${percentRemaining}%, transparent ${percentRemaining}%)` }}
+            >
+              <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
+            </span>
+          ) : (
+            <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
+          )}
+          <span className="text-sm font-medium">
+            {user.name}
+            {isSelf ? ' (you)' : ''}
+          </span>
+        </>
       )}
-      <span className="text-sm font-medium">
-        {user.name}
-        {isSelf ? ' (you)' : ''}
-      </span>
 
       {isBenched ? (
         <span className="text-xs font-semibold text-doghouse">🐕 in the doghouse</span>
