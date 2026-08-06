@@ -24,9 +24,7 @@ public class UserController {
             @RequestParam(defaultValue = "") String query, Authentication auth) {
         UUID selfId = (UUID) auth.getPrincipal();
         String needle = query.trim().toLowerCase();
-        List<UserSummaryResponse> results = userRepository.findAll().stream()
-                .filter(user -> !user.getId().equals(selfId))
-                .filter(user -> needle.isEmpty() || user.getDisplayName().toLowerCase().contains(needle))
+        List<UserSummaryResponse> results = userRepository.searchExcludingUser(selfId, needle).stream()
                 .map(user -> new UserSummaryResponse(user.getId(), user.getDisplayName(), user.getAvatar()))
                 .toList();
         return ResponseEntity.ok(results);

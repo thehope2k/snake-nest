@@ -6,9 +6,10 @@ style) — read that too if you haven't.
 
 ## Status
 
-Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password)
-and the Nest/membership domain (create, list, add/remove members, invite
-codes, direct-message/group unification) exist and are real. See
+Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password),
+the Nest/membership domain (create, list, add/remove members, invite
+codes, direct-message/group unification), and real-time chat (send,
+reply, react, delivered live over WebSocket) all exist and are real. See
 [../docs/architecture.md](../docs/architecture.md).
 
 ## REST conventions
@@ -34,12 +35,18 @@ codes, direct-message/group unification) exist and are real. See
 
 ## Layering
 
-- **REST** — durable CRUD only: users, Nests, message history, scores.
+- **REST** — durable CRUD: users, Nests, membership, message history.
   See [../docs/architecture.md](../docs/architecture.md).
-- **WebSocket (STOMP/SockJS)** — live chat delivery and broadcasting
-  moderation events (e.g. "X was sent to the Doghouse") to clients in a
-  Nest. Don't push durable-data changes over REST *and* WebSocket
-  redundantly — pick one per data type and be consistent.
+- **WebSocket (STOMP, SockJS fallback)** — live delivery only. Chat
+  messages/reactions are written via REST first (so history always
+  exists even if nobody's connected), then broadcast to
+  `/topic/nests/{nestId}/chat` for anyone subscribed. Auth on the
+  WebSocket handshake is a JWT passed as a `token` query param (browsers
+  can't set custom headers on a WebSocket handshake) via
+  `JwtHandshakeInterceptor`; a `ChannelInterceptor`
+  (`ChatChannelInterceptor`) checks Nest membership on every SUBSCRIBE,
+  not just at connect time, so someone removed from a Nest mid-session
+  can't keep listening in.
 - **LiveKit server SDK** — issues short-lived join tokens and executes
   moderation actions (`mutePublishedTrack`, etc.). This is the **only**
   path for forced mute/moderation actions — see the non-negotiable

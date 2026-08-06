@@ -45,16 +45,15 @@ graph TB
     LKSERVER --> SFU
 ```
 
-A React frontend talks to a Spring Boot backend over REST. Right now
-that's where the real, working part of the system ends: login/signup,
-creating and joining Nests, adding and removing people, all backed by a
-real Postgres database.
+A React frontend talks to a Spring Boot backend over REST and, now,
+over a live WebSocket connection too. Login/signup, creating and joining
+Nests, adding and removing people, and now real chat — sending messages,
+replies, and reactions, delivered live to everyone in the Nest — are all
+real, backed by Postgres.
 
-Chat, voice meetings, and the Doghouse mute feature are designed and
-built in the frontend already, but they're currently running on fake,
-in-memory data rather than talking to a server — that's on purpose. It
-let the interface get built and feel right before the harder real-time
-plumbing (WebSockets, LiveKit, Redis) gets wired in behind it.
+Voice meetings and the Doghouse mute feature are designed and built in
+the frontend already, but still run on fake, in-memory data rather than
+talking to a server — that's the next piece to wire up.
 
 ## The stack
 
@@ -66,6 +65,11 @@ plumbing (WebSockets, LiveKit, Redis) gets wired in behind it.
 - **Database changes**: handled through Liquibase, so every schema
   change is a reviewable, ordered file rather than "whatever Hibernate
   guesses."
+- **Chat delivery**: messages are sent over REST and persisted straight
+  away; everyone else in the Nest gets them live over a WebSocket
+  (STOMP), no polling. Joining a Nest's chat means subscribing to that
+  Nest's own channel, and the server checks you're actually a member
+  before letting the subscription through.
 - **Voice/video**: will run on LiveKit, self-hosted. Not connected yet.
 - **PostgreSQL** holds anything that needs to last: accounts, Nests,
   who's in them, and eventually chat history.
@@ -89,9 +93,12 @@ plumbing (WebSockets, LiveKit, Redis) gets wired in behind it.
   with you. Starting a 1:1 chat with the same person twice reuses the
   same Nest instead of creating a duplicate; starting a group chat
   always creates a fresh one, even with the same people.
-- **Chat** is the persistent text conversation inside a Nest. Working in
-  the UI today, but only against fake local data — real delivery and
-  history are the next thing to build on the backend.
+- **Chat** is the persistent text conversation inside a Nest. Sending a
+  message, replying to one, and reacting with an emoji are all real —
+  saved to Postgres and pushed live to everyone else currently in that
+  Nest. Reactions are per-person (so reacting twice with the same emoji
+  removes it, it doesn't double-count) and message history can be paged
+  back through rather than loading everything at once.
 - **Meet** is a casual, drop-in voice/video call tied to a Nest — not
   something you schedule ahead of time. Not hooked up to LiveKit yet.
 - **Doghouse** is the signature bit: during a call, you can send someone

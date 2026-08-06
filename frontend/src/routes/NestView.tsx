@@ -41,6 +41,14 @@ export function NestView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nestId])
 
+  useEffect(() => {
+    if (!nestId) return
+    store.loadMessages(nestId)
+    store.setActiveChatNest(nestId)
+    return () => store.setActiveChatNest(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nestId])
+
   if (!user) return <Navigate to="/nests" replace />
   if (!nest) {
     if (!store.nestsLoaded) return null
@@ -117,7 +125,7 @@ export function NestView() {
           />
           <Composer
             onSend={(text) => {
-              store.sendMessage(nest.id, user.id, text, replyingTo?.id ?? null)
+              store.sendMessage(nest.id, text, replyingTo?.id ?? null)
               setReplyingTo(null)
             }}
             replyingTo={replyingTo ? { message: replyingTo, author: usersById.get(replyingTo.authorId) } : null}

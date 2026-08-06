@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type SubmitEvent } from 'react'
-import { Send, X } from 'lucide-react'
+import { Reply, Send, X } from 'lucide-react'
 import { EmojiPicker, IconButton, Textarea } from '@/components/ui'
 import type { Message, User } from '@/lib/types'
 
@@ -66,12 +66,13 @@ export function Composer({ onSend, replyingTo, onCancelReply }: ComposerProps) {
   return (
     <div className="border-t border-border">
       {replyingTo && (
-        <div className="flex items-center justify-between gap-2 bg-panel px-4 py-2 text-xs text-fg-muted">
+        <div className="flex items-center gap-2 border-l-2 border-accent/50 bg-panel px-4 py-2 text-xs text-fg-muted">
+          <Reply size={14} className="shrink-0 text-fg-subtle" />
           <span className="truncate">
             Replying to <span className="font-medium text-fg">{replyingTo.author?.name ?? 'Unknown'}</span>:{' '}
             {replyingTo.message.text}
           </span>
-          <IconButton onClick={onCancelReply} aria-label="Cancel reply" size="sm" className="shrink-0">
+          <IconButton onClick={onCancelReply} aria-label="Cancel reply" size="sm" className="ml-auto shrink-0">
             <X size={14} />
           </IconButton>
         </div>

@@ -16,6 +16,7 @@ export interface Nest {
 export interface Reaction {
   emoji: string
   count: number
+  reactedByMe: boolean
 }
 
 export interface Message {

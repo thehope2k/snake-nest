@@ -49,7 +49,7 @@ public class NestController {
 
     @PatchMapping("/{nestId}")
     public ResponseEntity<NestResponse> rename(
-            @PathVariable UUID nestId, @RequestBody RenameNestRequest request, Authentication auth) {
+            @PathVariable UUID nestId, @Valid @RequestBody RenameNestRequest request, Authentication auth) {
         return ResponseEntity.ok(nestService.rename(nestId, userId(auth), request));
     }
 

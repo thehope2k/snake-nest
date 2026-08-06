@@ -1,0 +1,45 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-message
+      author: nest
+      changes:
+        - createTable:
+            tableName: message
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: nest_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: author_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: text
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reply_to_id
+                  type: uuid
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: message
+            indexName: idx_message_nest_id_created_at
+            columns:
+              - column:
+                  name: nest_id
+              - column:
+                  name: created_at

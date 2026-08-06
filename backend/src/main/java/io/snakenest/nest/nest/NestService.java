@@ -60,11 +60,8 @@ public class NestService {
     @Transactional(readOnly = true)
     public List<MemberResponse> searchUsers(UUID nestId, UUID requesterId, String query) {
         requireMember(nestId, requesterId);
-        List<UUID> currentMemberIds = membershipRepository.findByNestId(nestId).stream().map(NestMembership::getUserId).toList();
         String needle = query.trim().toLowerCase();
-        return userRepository.findAll().stream()
-                .filter(user -> !currentMemberIds.contains(user.getId()))
-                .filter(user -> needle.isEmpty() || user.getDisplayName().toLowerCase().contains(needle))
+        return userRepository.searchNotInNest(nestId, needle).stream()
                 .map(user -> new MemberResponse(user.getId(), user.getDisplayName(), user.getAvatar()))
                 .toList();
     }

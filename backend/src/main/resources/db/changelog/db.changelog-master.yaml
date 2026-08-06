@@ -7,3 +7,9 @@ databaseChangeLog:
       file: db/changelog/003-create-nest-membership.yaml
   - include:
       file: db/changelog/004-nest-name-icon-nullable.yaml
+  - include:
+      file: db/changelog/005-create-message.yaml
+  - include:
+      file: db/changelog/006-create-message-reaction.yaml
+  - include:
+      file: db/changelog/007-nest-membership-user-id-index.yaml

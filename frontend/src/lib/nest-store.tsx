@@ -1,5 +1,5 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Message, Nest, Participant, Reaction, User } from './types'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import type { Message, Nest, Participant, User } from './types'
 import { useAuth } from './auth'
 import {
   addMemberRequest,
@@ -14,6 +14,9 @@ import {
   searchUsersRequest,
   startConversationRequest,
 } from './nest-api'
+import { listMessagesRequest, sendMessageRequest, toMessage, toggleReactionRequest } from './chat-api'
+import { createChatSocket, subscribeToNestChat as subscribeSocket, type ChatEvent } from './chat-socket'
+import type { Client, StompSubscription } from '@stomp/stompjs'
 
 export const DOGHOUSE_DURATION_MS = 60_000
 const DOGHOUSE_COOLDOWN_MS = 30_000
@@ -40,9 +43,11 @@ interface NestStoreValue {
   removeMember: (nestId: string, userId: string) => Promise<void>
   getInviteCode: (nestId: string) => Promise<string>
   messagesFor: (nestId: string) => Message[]
+  loadMessages: (nestId: string) => Promise<void>
+  setActiveChatNest: (nestId: string | null) => void
   participantsFor: (nestId: string) => Participant[]
-  sendMessage: (nestId: string, authorId: string, text: string, replyToId?: string | null) => void
-  addReaction: (nestId: string, messageId: string, emoji: string) => void
+  sendMessage: (nestId: string, text: string, replyToId?: string | null) => Promise<void>
+  addReaction: (nestId: string, messageId: string, emoji: string) => Promise<void>
   sendToDoghouse: (nestId: string, targetUserId: string) => DoghouseRejection | null
   releaseFromDoghouse: (nestId: string, targetUserId: string) => void
   setDoghouseOptOut: (nestId: string, userId: string, optOut: boolean) => void
@@ -100,6 +105,49 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (user && token) refreshNests()
   }, [user, token, refreshNests])
+
+  const chatClientRef = useRef<Client | null>(null)
+  const [activeChatNestId, setActiveChatNestId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!token) return
+    const client = createChatSocket(token)
+    chatClientRef.current = client
+    client.activate()
+    return () => {
+      client.deactivate()
+      chatClientRef.current = null
+    }
+  }, [token])
+
+  useEffect(() => {
+    const client = chatClientRef.current
+    if (!client || !activeChatNestId) return
+
+    let subscription: StompSubscription | null = null
+    function attach() {
+      subscription = subscribeSocket(client!, activeChatNestId!, handleChatEvent)
+    }
+    if (client.connected) attach()
+    client.onConnect = attach
+
+    return () => {
+      subscription?.unsubscribe()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChatNestId, token])
+
+  function handleChatEvent(event: ChatEvent) {
+    const message = toMessage(event.message as Parameters<typeof toMessage>[0])
+    setMessagesByNest((current) => ({
+      ...current,
+      [message.nestId]: upsertMessage(current[message.nestId] ?? [], message),
+    }))
+  }
+
+  function setActiveChatNest(nestId: string | null) {
+    setActiveChatNestId(nestId)
+  }
 
   function requireToken(): string {
     if (!token) throw new Error('Not signed in')
@@ -165,6 +213,11 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     return getInviteCodeRequest(requireToken(), nestId)
   }
 
+  async function loadMessages(nestId: string): Promise<void> {
+    const messages = await listMessagesRequest(requireToken(), nestId)
+    setMessagesByNest((current) => ({ ...current, [nestId]: messages }))
+  }
+
   function messagesFor(nestId: string): Message[] {
     return messagesByNest[nestId] ?? []
   }
@@ -173,25 +226,19 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     return participantsByNest[nestId] ?? []
   }
 
-  function sendMessage(nestId: string, authorId: string, text: string, replyToId: string | null = null) {
-    const message: Message = {
-      id: crypto.randomUUID(),
-      nestId,
-      authorId,
-      text,
-      sentAt: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
-      reactions: [],
-      replyToId,
-    }
-    setMessagesByNest((current) => ({ ...current, [nestId]: [...(current[nestId] ?? []), message] }))
-  }
-
-  function addReaction(nestId: string, messageId: string, emoji: string) {
+  async function sendMessage(nestId: string, text: string, replyToId: string | null = null): Promise<void> {
+    const message = await sendMessageRequest(requireToken(), nestId, text, replyToId)
     setMessagesByNest((current) => ({
       ...current,
-      [nestId]: (current[nestId] ?? []).map((message) =>
-        message.id === messageId ? { ...message, reactions: bumpReaction(message.reactions, emoji) } : message,
-      ),
+      [nestId]: upsertMessage(current[nestId] ?? [], message),
+    }))
+  }
+
+  async function addReaction(nestId: string, messageId: string, emoji: string): Promise<void> {
+    const message = await toggleReactionRequest(requireToken(), messageId, emoji)
+    setMessagesByNest((current) => ({
+      ...current,
+      [nestId]: upsertMessage(current[nestId] ?? [], message),
     }))
   }
 
@@ -251,6 +298,8 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     removeMember,
     getInviteCode,
     messagesFor,
+    loadMessages,
+    setActiveChatNest,
     participantsFor,
     sendMessage,
     addReaction,
@@ -287,10 +336,10 @@ function releaseExpired(byNest: Record<string, Participant[]>, now: number): Rec
   return changed ? next : byNest
 }
 
-function bumpReaction(reactions: Reaction[], emoji: string): Reaction[] {
-  const existing = reactions.find((r) => r.emoji === emoji)
-  if (!existing) return [...reactions, { emoji, count: 1 }]
-  return reactions.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1 } : r))
+function upsertMessage(messages: Message[], incoming: Message): Message[] {
+  const index = messages.findIndex((m) => m.id === incoming.id)
+  if (index === -1) return [...messages, incoming]
+  return messages.map((m, i) => (i === index ? incoming : m))
 }
 
 export function useNestStore(): NestStoreValue {

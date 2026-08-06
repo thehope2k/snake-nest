@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-nest-membership-user-id-index
+      author: nest
+      comment: >
+        The existing unique constraint on (nest_id, user_id) only serves lookups
+        filtered by nest_id first. findByUserId (used to list "my Nests") had no
+        supporting index and was doing a full table scan.
+      changes:
+        - createIndex:
+            tableName: nest_membership
+            indexName: idx_nest_membership_user_id
+            columns:
+              - column:
+                  name: user_id
