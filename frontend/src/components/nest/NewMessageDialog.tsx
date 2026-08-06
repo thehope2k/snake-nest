@@ -54,7 +54,7 @@ export function NewMessageDialog({ trigger }: NewMessageDialogProps) {
       const nest = await startConversation(selected.map((u) => u.id))
       setOpen(false)
       reset()
-      navigate(`/nests/${nest.id}/chat`)
+      navigate(`/nests/${nest.id}`)
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : 'Something went wrong. Try again.')
     } finally {

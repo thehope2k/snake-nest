@@ -1,6 +1,9 @@
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom'
 import { AuthProvider } from '@/lib/auth'
+import { NestSocketProvider } from '@/lib/nest-socket'
 import { NestStoreProvider } from '@/lib/nest-store'
+import { MeetCallProvider } from '@/lib/meet-call'
+import { FloatingCallWidget } from '@/components/meet/FloatingCallWidget'
 import { Landing } from '@/routes/Landing'
 import { RequireAuth } from '@/routes/RequireAuth'
 import { AppShell } from '@/routes/AppShell'
@@ -10,21 +13,26 @@ import { NestView } from '@/routes/NestView'
 export default function App() {
   return (
     <AuthProvider>
-      <NestStoreProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/sign-in" element={<Navigate to="/" replace />} />
-            <Route element={<RequireAuth />}>
-              <Route element={<AppShell />}>
-                <Route path="/nests" element={<NestList />} />
-                <Route path="/nests/:nestId/:view?" element={<NestView />} />
-              </Route>
-            </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </BrowserRouter>
-      </NestStoreProvider>
+      <NestSocketProvider>
+        <NestStoreProvider>
+          <MeetCallProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/sign-in" element={<Navigate to="/" replace />} />
+                <Route element={<RequireAuth />}>
+                  <Route element={<AppShell />}>
+                    <Route path="/nests" element={<NestList />} />
+                    <Route path="/nests/:nestId" element={<NestView />} />
+                  </Route>
+                </Route>
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <FloatingCallWidget />
+            </BrowserRouter>
+          </MeetCallProvider>
+        </NestStoreProvider>
+      </NestSocketProvider>
     </AuthProvider>
   )
 }

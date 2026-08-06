@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { CirclePlus, LogOut, MessageSquarePlus } from 'lucide-react'
+import { CirclePlus, LogOut, MessageSquarePlus, Phone } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { Avatar, Badge, IconButton } from '@/components/ui'
 import { CreateNestDialog } from '@/components/nest/CreateNestDialog'
@@ -14,7 +14,7 @@ const MAX_UNREAD_DISPLAY = 9
 
 export function NestSidebar() {
   const { user, signOut } = useAuth()
-  const { nests, nestsLoaded, nestsError, membersFor, loadMembers } = useNestStore()
+  const { nests, nestsLoaded, nestsError, membersFor, loadMembers, meetActivityFor } = useNestStore()
   const { nestId: activeNestId } = useParams<{ nestId?: string }>()
   const { unreadCountFor } = useNestActivity(activeNestId)
 
@@ -54,10 +54,11 @@ export function NestSidebar() {
           nests.map((nest) => {
             const identity = nestIdentity(nest, membersFor(nest.id), user?.id ?? '')
             const unreadCount = nest.id === activeNestId ? 0 : unreadCountFor(nest.id)
+            const onCallCount = meetActivityFor(nest.id)
             return (
               <Link
                 key={nest.id}
-                to={`/nests/${nest.id}/chat`}
+                to={`/nests/${nest.id}`}
                 className={cn(
                   'flex items-center gap-2 truncate rounded-md px-2 py-1.5 text-sm transition-shadow',
                   nest.id === activeNestId ? 'bg-elevated text-fg shadow-sm' : 'text-fg-muted hover:bg-elevated hover:text-fg',
@@ -65,11 +66,17 @@ export function NestSidebar() {
               >
                 <Avatar name={identity.name} seed={nest.id} emoji={identity.icon} size="sm" />
                 <span className="truncate">{identity.name}</span>
-                {unreadCount > 0 && (
-                  <Badge tone="accent" className="ml-auto shrink-0">
-                    {unreadCount > MAX_UNREAD_DISPLAY ? `${MAX_UNREAD_DISPLAY}+` : unreadCount}
-                  </Badge>
-                )}
+                <span className="ml-auto flex shrink-0 items-center gap-1">
+                  {onCallCount > 0 && (
+                    <Badge tone="success" className="gap-1">
+                      <Phone size={11} />
+                      {onCallCount}
+                    </Badge>
+                  )}
+                  {unreadCount > 0 && (
+                    <Badge tone="accent">{unreadCount > MAX_UNREAD_DISPLAY ? `${MAX_UNREAD_DISPLAY}+` : unreadCount}</Badge>
+                  )}
+                </span>
               </Link>
             )
           })

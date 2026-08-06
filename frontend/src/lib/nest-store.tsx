@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Message, Nest, Participant, User } from './types'
 import { useAuth } from './auth'
 import {
@@ -15,8 +15,10 @@ import {
   startConversationRequest,
 } from './nest-api'
 import { listMessagesRequest, sendMessageRequest, toMessage, toggleReactionRequest } from './chat-api'
-import { createChatSocket, subscribeToNestChat as subscribeSocket, type ChatEvent } from './chat-socket'
-import type { Client, StompSubscription } from '@stomp/stompjs'
+import { subscribeToNestChat as subscribeSocket, type ChatEvent } from './chat-socket'
+import { listMeetParticipantsRequest } from './meet-api'
+import { subscribeToNestMeet, type MeetEvent } from './meet-socket'
+import { useNestSocket } from './nest-socket'
 
 export const DOGHOUSE_DURATION_MS = 60_000
 const DOGHOUSE_COOLDOWN_MS = 30_000
@@ -46,6 +48,7 @@ interface NestStoreValue {
   loadMessages: (nestId: string) => Promise<void>
   setActiveChatNest: (nestId: string | null) => void
   participantsFor: (nestId: string) => Participant[]
+  meetActivityFor: (nestId: string) => number
   sendMessage: (nestId: string, text: string, replyToId?: string | null) => Promise<void>
   addReaction: (nestId: string, messageId: string, emoji: string) => Promise<void>
   sendToDoghouse: (nestId: string, targetUserId: string) => DoghouseRejection | null
@@ -106,36 +109,55 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     if (user && token) refreshNests()
   }, [user, token, refreshNests])
 
-  const chatClientRef = useRef<Client | null>(null)
+  const chatClient = useNestSocket()
   const [activeChatNestId, setActiveChatNestId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!token) return
-    const client = createChatSocket(token)
-    chatClientRef.current = client
-    client.activate()
-    return () => {
-      client.deactivate()
-      chatClientRef.current = null
-    }
-  }, [token])
+    const { client, connected } = chatClient
+    if (!client || !connected || !activeChatNestId) return
+    const subscription = subscribeSocket(client, activeChatNestId, handleChatEvent)
+    return () => subscription.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChatNestId, chatClient.client, chatClient.connected])
+
+  // Live "is anyone on a call right now" per Nest — subscribed for every Nest you're in, not
+  // just the one you're currently viewing, so the sidebar can show it before you switch there.
+  const [meetActivityByNest, setMeetActivityByNest] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    const client = chatClientRef.current
-    if (!client || !activeChatNestId) return
+    const { client, connected } = chatClient
+    if (!client || !connected || !token || nests.length === 0) return
+    let cancelled = false
 
-    let subscription: StompSubscription | null = null
-    function attach() {
-      subscription = subscribeSocket(client!, activeChatNestId!, handleChatEvent)
-    }
-    if (client.connected) attach()
-    client.onConnect = attach
+    const subscriptions = nests.map((nest) => {
+      listMeetParticipantsRequest(token, nest.id)
+        .then((participants) => {
+          if (cancelled) return
+          setMeetActivityByNest((current) => ({ ...current, [nest.id]: participants.length }))
+        })
+        .catch(() => {
+          // Best-effort presence snapshot — the live WS events below still keep it roughly right.
+        })
+
+      return subscribeToNestMeet(client, nest.id, (event: MeetEvent) => {
+        setMeetActivityByNest((current) => {
+          const count = current[nest.id] ?? 0
+          const next = event.type === 'participant-joined' ? count + 1 : Math.max(0, count - 1)
+          return { ...current, [nest.id]: next }
+        })
+      })
+    })
 
     return () => {
-      subscription?.unsubscribe()
+      cancelled = true
+      subscriptions.forEach((subscription) => subscription.unsubscribe())
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeChatNestId, token])
+  }, [nests, chatClient.client, chatClient.connected, token])
+
+  function meetActivityFor(nestId: string): number {
+    return meetActivityByNest[nestId] ?? 0
+  }
 
   function handleChatEvent(event: ChatEvent) {
     const message = toMessage(event.message as Parameters<typeof toMessage>[0])
@@ -301,6 +323,7 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     loadMessages,
     setActiveChatNest,
     participantsFor,
+    meetActivityFor,
     sendMessage,
     addReaction,
     sendToDoghouse,

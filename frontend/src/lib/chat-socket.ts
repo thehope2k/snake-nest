@@ -1,21 +1,8 @@
-import { Client, type IMessage } from '@stomp/stompjs'
-import { apiOrigin } from './api-client'
+import type { IMessage, Client } from '@stomp/stompjs'
 
 export interface ChatEvent {
   type: 'message-created' | 'reaction-updated'
   message: unknown
-}
-
-function wsUrl(token: string): string {
-  const origin = apiOrigin().replace(/^http/, 'ws')
-  return `${origin}/ws/websocket?token=${encodeURIComponent(token)}`
-}
-
-export function createChatSocket(token: string): Client {
-  return new Client({
-    brokerURL: wsUrl(token),
-    reconnectDelay: 3_000,
-  })
 }
 
 export function subscribeToNestChat(client: Client, nestId: string, onEvent: (event: ChatEvent) => void) {
