@@ -7,10 +7,19 @@
 # Requires a `.env` file next to this one on the VM (never committed -- see
 # .env.example) with real secrets: DB_PASSWORD, JWT_SECRET, LIVEKIT_API_KEY,
 # LIVEKIT_API_SECRET, and SITE_ADDRESS.
+#
+# Memory budget note: this stack targets a 1GB Always-Free VM.Standard.E2.1.Micro
+# as a stopgap while waiting on A1.Flex capacity. Every service below has an
+# explicit mem_limit so a runaway container gets OOM-killed and restarted by
+# Docker (recoverable) instead of exhausting host RAM and freezing the whole
+# VM unresponsive (which happened before these limits were added). Revisit/
+# raise these once running on a bigger instance.
 services:
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
+    mem_limit: 160m
+    command: ["postgres", "-c", "shared_buffers=48MB", "-c", "max_connections=20", "-c", "work_mem=4MB"]
     environment:
       POSTGRES_DB: nest
       POSTGRES_USER: nest
@@ -28,6 +37,8 @@ services:
   redis:
     image: redis:7-alpine
     restart: unless-stopped
+    mem_limit: 64m
+    command: ["redis-server", "--maxmemory", "32mb", "--maxmemory-policy", "allkeys-lru"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -37,6 +48,7 @@ services:
   livekit:
     image: livekit/livekit-server:v1.9
     restart: unless-stopped
+    mem_limit: 120m
     # --dev mode's fixed devkey/secret pair is local-dev-only (see
     # infra/README.md). A real deployment needs a generated key/secret pair
     # and its own livekit.yaml (TURN/TLS) -- tracked as a follow-up, not
@@ -54,7 +66,14 @@ services:
   backend:
     image: ghcr.io/${GITHUB_REPOSITORY:-thehope2k/snake-nest}-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    mem_limit: 300m
     environment:
+      # JAVA_TOOL_OPTIONS is auto-picked-up by any JVM launch (no Dockerfile/
+      # entrypoint change needed). Caps heap well under the container's
+      # mem_limit, leaving room for JVM non-heap (metaspace, thread stacks,
+      # code cache) -- without this the JVM's ergonomic default (~25% of
+      # visible host RAM) kept growing until the box ran out of memory.
+      JAVA_TOOL_OPTIONS: "-Xmx128m -Xss256k -XX:MaxMetaspaceSize=80m"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: nest
@@ -78,12 +97,14 @@ services:
   frontend:
     image: ghcr.io/${GITHUB_REPOSITORY:-thehope2k/snake-nest}-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
+    mem_limit: 32m
     depends_on:
       - backend
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    mem_limit: 64m
     ports:
       - "80:80"
       - "443:443"
