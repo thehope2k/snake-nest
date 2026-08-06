@@ -12,3 +12,6 @@ export type { BadgeProps, BadgeTone } from './Badge'
 
 export { Toggle } from './Toggle'
 export type { ToggleProps } from './Toggle'
+
+export { Dialog, DialogTrigger, DialogContent } from './Dialog'
+export type { DialogContentProps } from './Dialog'
