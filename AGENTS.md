@@ -74,8 +74,10 @@ relax for convenience:
 
 - Any "mute/bench another user" mechanic must be **visible to the
   target**, never silent.
-- Must support a **per-user opt-out** that is silently respected.
 - Must have a **moderator/Nest-owner override** to release someone early.
+  This is the target's only way out before the timer expires — deliberate,
+  since Doghouse has no per-user opt-out (dropped from scope; see
+  [principles.md](docs/product/principles.md)).
 - Must ship **anti-pile-on limits** (cooldown, max concurrent) together
   with the feature, not added later.
 - Anonymous features must remain **traceable to moderators/admins** even

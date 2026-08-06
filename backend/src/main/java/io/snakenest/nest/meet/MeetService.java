@@ -78,6 +78,15 @@ public class MeetService {
         return listParticipantsWithoutMembershipCheck(nestId);
     }
 
+    public boolean isActiveParticipant(UUID nestId, UUID userId) {
+        return Boolean.TRUE.equals(redisTemplate.opsForHash().hasKey(presenceKey(nestId), userId.toString()));
+    }
+
+    public int activeParticipantCount(UUID nestId) {
+        Long size = redisTemplate.opsForHash().size(presenceKey(nestId));
+        return size == null ? 0 : size.intValue();
+    }
+
     private List<ParticipantResponse> listParticipantsWithoutMembershipCheck(UUID nestId) {
         Map<Object, Object> presence = redisTemplate.opsForHash().entries(presenceKey(nestId));
         return presence.entrySet().stream()
@@ -123,7 +132,7 @@ public class MeetService {
         }
     }
 
-    static String roomName(UUID nestId) {
+    public static String roomName(UUID nestId) {
         return ROOM_PREFIX + nestId;
     }
 

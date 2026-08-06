@@ -6,10 +6,10 @@ style) — read that too if you haven't.
 
 ## Status
 
-Scaffolded and real. Auth, Nest creation/joining, and membership
-management talk to the actual backend. Chat, Meet, and Doghouse UI exist
-but still run on local mock state — see
-[../docs/architecture.md](../docs/architecture.md).
+Scaffolded and real. Auth, Nest creation/joining, membership
+management, Chat, Meet, and Doghouse all talk to the actual backend —
+see [../docs/architecture.md](../docs/architecture.md) for what each
+of those actually does server-side.
 
 ## Stack
 
@@ -115,9 +115,10 @@ parent-flow/            # subdirectory for the pieces
   will come from LiveKit's client SDK
   (`livekit-client` / `@livekit/components-react`) as the source of
   truth — don't duplicate it into separate local state that can drift.
-- The Doghouse countdown must be **rendered from server-pushed state**
-  once that exists, never a client-only `setTimeout` — that's fine for
-  today's mock state, not for the real thing.
+- The Doghouse countdown is **rendered from server-pushed state**
+  (`benchedUntil`/`cooldownUntil` from the backend, updated live over
+  the Meet WebSocket topic) — never a client-only `setTimeout` deciding
+  when someone actually gets unmuted.
 
 ## Comments
 

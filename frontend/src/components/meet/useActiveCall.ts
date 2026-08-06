@@ -1,12 +1,11 @@
 import { useLocalParticipant, useParticipants, useTracks } from '@livekit/components-react'
 import { Track } from 'livekit-client'
-import { useAuth } from '@/lib/auth'
-import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
+import { useAuth } from '@/lib/auth-context'
+import { useNestStore, type DoghouseRejection } from '@/lib/nest-store-context'
 import { nestIdentity } from '@/lib/nest-identity'
-import { useToasts } from './Toasts'
+import { useToasts } from './use-toasts'
 
 const REJECTION_COPY: Record<DoghouseRejection, string> = {
-  'opted-out': 'They opted out of the Doghouse — respected, no exceptions.',
   'already-benched': 'Already in the Doghouse.',
   'on-cooldown': 'Still on cooldown from last time — no pile-ons.',
   'nest-full': 'Too many people benched already — the room needs someone to talk.',
@@ -28,14 +27,26 @@ export function useActiveCall(nestId: string) {
   const identity = nest && user ? nestIdentity(nest, members, user.id) : null
   const isOwner = nest?.ownerId === user?.id
 
-  function handleSendToDoghouse(targetUserId: string) {
-    const rejection = store.sendToDoghouse(nestId, targetUserId)
-    if (rejection) {
-      pushToast(REJECTION_COPY[rejection], 'warning')
-      return
+  async function handleSendToDoghouse(targetUserId: string) {
+    try {
+      const rejection = await store.sendToDoghouse(nestId, targetUserId)
+      if (rejection) {
+        pushToast(REJECTION_COPY[rejection], 'warning')
+        return
+      }
+      const target = usersById.get(targetUserId)
+      pushToast(`Everyone: shh... we're talking about ${target?.name ?? 'them'} 🤫`, 'doghouse')
+    } catch (cause) {
+      pushToast(cause instanceof Error ? cause.message : 'Could not send them to the Doghouse.', 'warning')
     }
-    const target = usersById.get(targetUserId)
-    pushToast(`Everyone: shh... we're talking about ${target?.name ?? 'them'} 🤫`, 'doghouse')
+  }
+
+  async function handleRelease(targetUserId: string) {
+    try {
+      await store.releaseFromDoghouse(nestId, targetUserId)
+    } catch (cause) {
+      pushToast(cause instanceof Error ? cause.message : 'Could not release them early.', 'warning')
+    }
   }
 
   return {
@@ -54,5 +65,6 @@ export function useActiveCall(nestId: string) {
     toasts,
     dismiss,
     handleSendToDoghouse,
+    handleRelease,
   }
 }

@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/006-create-message-reaction.yaml
   - include:
       file: db/changelog/007-nest-membership-user-id-index.yaml
+  - include:
+      file: db/changelog/008-nest-membership-doghouse-sent-count.yaml

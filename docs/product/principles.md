@@ -11,8 +11,13 @@ of a thing done behind someone's back.
 
 Anything that acts on another person needs real limits from day one, not
 bolted on after someone complains: a cap on how long it lasts, a cooldown
-so it can't be repeated endlessly, a personal opt-out that's always
-respected, and a way for a moderator to step in.
+so it can't be repeated endlessly, and a way for a moderator to step in
+and release someone early. Doghouse deliberately has no per-user
+opt-out — everyone on a call is equally subject to it, which is part of
+what keeps it feeling like a shared joke rather than a targeted
+punishment only some people can escape. The limits above (duration cap,
+cooldown, moderator override) are what keep it from being abused, not a
+way to sit outside the mechanic entirely.
 
 ## Keep it flat
 

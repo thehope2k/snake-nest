@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
 import type { Message, Nest, Participant, User } from './types'
+import type { DoghouseRejection } from './doghouse-api'
 
-export type DoghouseRejection = 'opted-out' | 'already-benched' | 'on-cooldown' | 'nest-full'
+export type { DoghouseRejection }
 
 export interface NestStoreValue {
   nests: Nest[]
@@ -27,9 +28,8 @@ export interface NestStoreValue {
   meetActivityFor: (nestId: string) => number
   sendMessage: (nestId: string, text: string, replyToId?: string | null) => Promise<void>
   addReaction: (nestId: string, messageId: string, emoji: string) => Promise<void>
-  sendToDoghouse: (nestId: string, targetUserId: string) => DoghouseRejection | null
-  releaseFromDoghouse: (nestId: string, targetUserId: string) => void
-  setDoghouseOptOut: (nestId: string, userId: string, optOut: boolean) => void
+  sendToDoghouse: (nestId: string, targetUserId: string) => Promise<DoghouseRejection | null>
+  releaseFromDoghouse: (nestId: string, targetUserId: string) => Promise<void>
 }
 
 export const NestStoreContext = createContext<NestStoreValue | null>(null)

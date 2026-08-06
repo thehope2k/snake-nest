@@ -1,6 +1,6 @@
 import { Dog, DoorOpen, Mic, MicOff } from 'lucide-react'
 import { VideoTrack, type TrackReference } from '@livekit/components-react'
-import { Avatar, IconButton, Toggle, Tooltip } from '@/components/ui'
+import { Avatar, IconButton, Tooltip } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import { DOGHOUSE_DURATION_MS } from '@/lib/nest-store'
 import type { Participant, User } from '@/lib/types'
@@ -16,7 +16,6 @@ interface ParticipantTileProps {
   videoTrackRef?: TrackReference
   onSendToDoghouse: () => void
   onRelease: () => void
-  onToggleOptOut: (optOut: boolean) => void
 }
 
 export function ParticipantTile({
@@ -28,7 +27,6 @@ export function ParticipantTile({
   videoTrackRef,
   onSendToDoghouse,
   onRelease,
-  onToggleOptOut,
 }: ParticipantTileProps) {
   const isBenched = Boolean(participant.doghouseUntil && participant.doghouseUntil > now)
   const secondsLeft = isBenched ? Math.ceil((participant.doghouseUntil! - now) / MS_PER_SECOND) : 0
@@ -84,14 +82,6 @@ export function ParticipantTile({
             <IconButton aria-label="Release early (owner)" size="sm" className="bg-black/60 text-white hover:bg-black/80" onClick={onRelease}>
               <DoorOpen size={14} />
             </IconButton>
-          </Tooltip>
-        )}
-
-        {isSelf && (
-          <Tooltip label="Opt out of Doghouse">
-            <span className="rounded-full bg-black/60 p-1">
-              <Toggle checked={participant.doghouseOptOut} onChange={onToggleOptOut} label="Opt out of Doghouse" />
-            </span>
           </Tooltip>
         )}
       </div>

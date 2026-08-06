@@ -53,16 +53,14 @@ graph TB
     HOOK --> MEET
 ```
 
-A React frontend talks to a Spring Boot backend over REST and, now,
-over a live WebSocket connection too. Login/signup, creating and joining
-Nests, adding and removing people, real chat — sending messages,
-replies, and reactions, delivered live to everyone in the Nest — and now
-Meet — joining/leaving a Nest's drop-in call, backed by a self-hosted
-LiveKit SFU — are all real, backed by Postgres and Redis.
-
-The Doghouse mute feature is designed and built in the frontend already,
-but still runs on fake, in-memory data rather than talking to a server —
-that's the next piece to wire up.
+A React frontend talks to a Spring Boot backend over REST and a live
+WebSocket connection. Login/signup, creating and joining Nests, adding
+and removing people, real chat — sending messages, replies, and
+reactions, delivered live to everyone in the Nest — Meet — joining/
+leaving a Nest's drop-in call, backed by a self-hosted LiveKit SFU — and
+Doghouse — muting someone for everyone to see, backed by a real
+server-side timer and an actual LiveKit mute — are all real, backed by
+Postgres and Redis.
 
 ## The stack
 
@@ -87,8 +85,9 @@ that's the next piece to wire up.
 - **PostgreSQL** holds anything that needs to last: accounts, Nests,
   who's in them, and chat history.
 - **Redis** holds anything short-lived: who's currently in a Meet call
-  right now (a hash per Nest, `meet:{nestId}:participants`), and
-  eventually an active Doghouse countdown.
+  right now (a hash per Nest, `meet:{nestId}:participants`), and who's
+  currently benched in the Doghouse and on cooldown from it (two more
+  hashes per Nest, `doghouse:{nestId}:benched`/`:cooldown`).
 
 ## How the product is modeled
 
@@ -148,17 +147,20 @@ that's the next piece to wire up.
   amount of time — like saying "we're talking about you" out loud
   instead of muting them secretly. It has to ship with real limits
   attached: a cooldown so people can't be piled on, a cap on how many
-  people can be muted at once, a personal opt-out that's always
-  respected, and a way for the Nest's owner to let someone out early.
-  Because a call can be visible from anywhere in the app now, not just
-  from that Nest's own screen, the mute has to render in that same
-  floating control too — if the target had wandered off to another
-  Nest, hiding the mute there would let it happen without them actually
-  seeing it, which defeats the entire point of doing it out loud
-  instead of secretly. Right now this all runs in the browser as a
-  simulation; the real version needs to live on the server (a
-  Redis-backed timer, an actual LiveKit mute) so it can't be faked and
-  survives a page refresh.
+  people can be muted at once, and a way for the Nest's owner to let
+  someone out early. There's deliberately no per-user opt-out — everyone
+  on a call is equally subject to it, which is part of what keeps it a
+  shared joke rather than a punishment some people can sit outside of;
+  the moderator override is the only early way out. Because a call can
+  be visible from anywhere in the app now, not just from that Nest's
+  own screen, the mute has to render in that same floating control too
+  — if the target had wandered off to another Nest, hiding the mute
+  there would let it happen without them actually seeing it, which
+  defeats the entire point of doing it out loud instead of secretly.
+  This lives on the server, not the browser: a scheduled sweep resolves
+  the countdown against a Redis-backed timer regardless of who's still
+  watching, and the mute itself is a real LiveKit server-side call (not
+  client-only state), so it can't be faked and survives a page refresh.
 
 ## How big this needs to be
 

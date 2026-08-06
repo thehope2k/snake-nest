@@ -33,6 +33,5 @@ export interface Participant {
   userId: string
   doghouseUntil: number | null
   cooldownUntil: number | null
-  doghouseOptOut: boolean
   doghouseCount: number
 }

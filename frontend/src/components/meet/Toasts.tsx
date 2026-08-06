@@ -1,29 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { AlertTriangle, CheckCircle2, Dog, Info, X, type LucideIcon } from 'lucide-react'
 import { IconButton } from '@/components/ui'
 import { cn } from '@/lib/cn'
-import type { BadgeTone } from '@/components/ui'
+import type { ToastEntry, ToastTone } from './use-toasts'
 
-export type ToastTone = BadgeTone
-
-interface ToastEntry {
-  id: number
-  text: string
-  tone: ToastTone
-}
-
-let nextId = 0
-
-export function useToasts() {
-  const [toasts, setToasts] = useState<ToastEntry[]>([])
-
-  function pushToast(text: string, tone: ToastTone = 'neutral') {
-    const id = nextId++
-    setToasts((current) => [...current, { id, text, tone }])
-  }
-
-  return { toasts, pushToast, dismiss: (id: number) => setToasts((current) => current.filter((t) => t.id !== id)) }
-}
+export type { ToastTone }
 
 const TOAST_LIFETIME_MS = 3_200
 

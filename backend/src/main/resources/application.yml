@@ -37,6 +37,12 @@ nest:
     # devkey/secret match LiveKit's `--dev` mode fixed pair -- local dev only, never use in a real deployment.
     api-key: ${LIVEKIT_API_KEY:devkey}
     api-secret: ${LIVEKIT_API_SECRET:secret}
+  doghouse:
+    duration-seconds: ${DOGHOUSE_DURATION_SECONDS:60}
+    cooldown-seconds: ${DOGHOUSE_COOLDOWN_SECONDS:30}
+    # Cap on how many participants can be benched at once, as a fraction of everyone
+    # currently on the call -- the anti-pile-on limit from docs/product/principles.md.
+    max-concurrent-ratio: ${DOGHOUSE_MAX_CONCURRENT_RATIO:0.5}
 
 management:
   endpoints:

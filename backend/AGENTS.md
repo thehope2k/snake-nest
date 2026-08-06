@@ -9,10 +9,11 @@ style) — read that too if you haven't.
 Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password),
 the Nest/membership domain (create, list, add/remove members, invite
 codes, direct-message/group unification), real-time chat (send,
-reply, react, delivered live over WebSocket), and Meet (join/leave a
-Nest's LiveKit call, live presence, webhook reconciliation) all exist
-and are real. See [../docs/architecture.md](../docs/architecture.md).
-Doghouse is still frontend-only fake state — not wired up yet.
+reply, react, delivered live over WebSocket), Meet (join/leave a
+Nest's LiveKit call, live presence, webhook reconciliation), and
+Doghouse (send/release, cooldown, max-concurrent, owner override, a
+real LiveKit mute, and a scheduled server-side expiry) all exist and
+are real. See [../docs/architecture.md](../docs/architecture.md).
 
 ## REST conventions
 
@@ -81,15 +82,23 @@ Doghouse is still frontend-only fake state — not wired up yet.
 
 ## The Doghouse state machine
 
-Must be **server-owned**, not tracked only in a client's memory:
+Server-owned (`DoghouseService`), not tracked only in a client's memory:
 
-- Redis key `doghouse:{nestId}:{userId}` set with a TTL when triggered.
-- Expiry (keyspace notification or short poll) triggers the unmute call
-  through the LiveKit server SDK + broadcasts the "let back in" event.
-- Guardrails (cooldown, max concurrent, opt-out, moderator override —
-  see [../docs/architecture.md](../docs/architecture.md)) are enforced
+- Two Redis hashes per Nest: `doghouse:{nestId}:benched` and
+  `doghouse:{nestId}:cooldown`, each `userId → epoch millis`, mirroring
+  the `meet:{nestId}:participants` hash shape already used by
+  `MeetService`.
+- A `@Scheduled` sweep (short poll, once a second) resolves expired
+  benches regardless of whether a client is still watching: it triggers
+  the unmute call through the LiveKit server SDK, starts the cooldown,
+  and broadcasts the "let back in" event over the same
+  `/topic/nests/{nestId}/meet` topic Meet presence already uses.
+- Guardrails (cooldown, max concurrent, moderator override — see
+  [../docs/architecture.md](../docs/architecture.md)) are enforced
   **in this service**, not left to the frontend to respect voluntarily.
   A client that ignores the cooldown must still be rejected server-side.
+  Deliberately no per-user opt-out — see
+  [../docs/product/principles.md](../docs/product/principles.md).
 
 ## Data
 

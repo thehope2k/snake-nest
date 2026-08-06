@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-nest-membership-doghouse-sent-count
+      author: nest
+      comment: >
+        Tracks lifetime "sent to the Doghouse" count per membership so the UI can
+        show it as a durable stat instead of resetting every time the page reloads.
+      changes:
+        - addColumn:
+            tableName: nest_membership
+            columns:
+              - column:
+                  name: doghouse_sent_count
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false

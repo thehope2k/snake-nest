@@ -31,8 +31,15 @@ public class NestMembership {
     @Column(nullable = false)
     private Instant joinedAt = Instant.now();
 
+    @Column(name = "doghouse_sent_count", nullable = false)
+    private int doghouseSentCount = 0;
+
     public NestMembership(UUID nestId, UUID userId) {
         this.nestId = nestId;
         this.userId = userId;
+    }
+
+    public void incrementDoghouseSentCount() {
+        this.doghouseSentCount++;
     }
 }

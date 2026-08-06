@@ -2,7 +2,7 @@ import { useRef, type RefObject } from 'react'
 import { Camera, CameraOff, Mic, MicOff, Minimize2, PhoneOff } from 'lucide-react'
 import { useGridLayout } from '@livekit/components-react'
 import { Avatar, Badge, IconButton } from '@/components/ui'
-import { useMeetCall } from '@/lib/meet-call'
+import { useMeetCall } from '@/lib/meet-call-context'
 import { useActiveCall } from './useActiveCall'
 import { ParticipantTile } from './ParticipantTile'
 import { ToastStack } from './Toasts'
@@ -66,8 +66,7 @@ export function ExpandedCallView({ nestId }: ExpandedCallViewProps) {
               canRelease={call.isOwner}
               videoTrackRef={call.cameraTrackByIdentity.get(participant.identity)}
               onSendToDoghouse={() => call.handleSendToDoghouse(participant.identity)}
-              onRelease={() => call.store.releaseFromDoghouse(nestId, participant.identity)}
-              onToggleOptOut={(optOut) => call.store.setDoghouseOptOut(nestId, participant.identity, optOut)}
+              onRelease={() => call.handleRelease(participant.identity)}
             />
           )
         })}
