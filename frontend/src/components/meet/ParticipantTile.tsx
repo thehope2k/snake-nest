@@ -1,5 +1,5 @@
 import { Mic, MicOff } from 'lucide-react'
-import { Avatar, Toggle } from '@/components/ui'
+import { Avatar, Button, Toggle } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import { DOGHOUSE_DURATION_MS } from '@/lib/nest-store'
 import type { Participant, User } from '@/lib/types'
@@ -35,7 +35,7 @@ export function ParticipantTile({
     <div
       key={participant.doghouseUntil ?? 'idle'}
       className={cn(
-        'relative flex flex-col items-center gap-2 rounded-lg border p-5 text-center transition-[opacity,filter,border-color] duration-slow ease-standard',
+        'relative flex flex-col items-center gap-2 rounded-lg border p-5 text-center shadow-sm transition-[opacity,filter,border-color,box-shadow] duration-slow ease-standard hover:shadow-md',
         isBenched ? 'border-doghouse opacity-60 grayscale animate-doghouse-enter' : 'border-border',
       )}
     >
@@ -63,15 +63,15 @@ export function ParticipantTile({
       )}
 
       {!isSelf && !isBenched && (
-        <button onClick={onSendToDoghouse} className="text-xs text-fg-muted hover:text-accent">
+        <Button variant="ghost" className="h-auto p-0 text-xs" onClick={onSendToDoghouse}>
           send to Doghouse
-        </button>
+        </Button>
       )}
 
       {isBenched && canRelease && (
-        <button onClick={onRelease} className="text-xs text-fg-muted hover:text-accent">
+        <Button variant="ghost" className="h-auto p-0 text-xs" onClick={onRelease}>
           release early (owner)
-        </button>
+        </Button>
       )}
 
       {isSelf && (

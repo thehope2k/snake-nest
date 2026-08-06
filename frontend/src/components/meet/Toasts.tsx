@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, CheckCircle2, Dog, Info, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Dog, Info, X, type LucideIcon } from 'lucide-react'
+import { IconButton } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import type { BadgeTone } from '@/components/ui'
 
@@ -61,9 +62,12 @@ function ToastItem({ toast, onExpire }: { toast: ToastEntry; onExpire: () => voi
   const Icon = TONE_ICON[toast.tone]
 
   return (
-    <div className="toast-item flex items-center gap-2 rounded-md border border-border-strong bg-elevated px-4 py-2 text-sm shadow-lg">
+    <div className="toast-item pointer-events-auto flex items-center gap-2 rounded-md border border-border-strong bg-elevated px-4 py-2 text-sm shadow-lg">
       <Icon size={16} className={cn('shrink-0', TONE_ICON_CLASSES[toast.tone])} />
-      {toast.text}
+      <span>{toast.text}</span>
+      <IconButton onClick={onExpire} aria-label="Dismiss" size="sm" className="-mr-1 ml-1 rounded-full">
+        <X size={14} />
+      </IconButton>
     </div>
   )
 }

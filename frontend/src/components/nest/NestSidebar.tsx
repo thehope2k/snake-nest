@@ -14,7 +14,7 @@ const MAX_UNREAD_DISPLAY = 9
 
 export function NestSidebar() {
   const { user, signOut } = useAuth()
-  const { nests, membersFor, loadMembers } = useNestStore()
+  const { nests, nestsLoaded, nestsError, membersFor, loadMembers } = useNestStore()
   const { nestId: activeNestId } = useParams<{ nestId?: string }>()
   const { unreadCountFor } = useNestActivity(activeNestId)
 
@@ -46,7 +46,9 @@ export function NestSidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
-        {nests.length === 0 ? (
+        {nestsError ? (
+          <p className="p-2 text-xs text-doghouse">{nestsError}</p>
+        ) : !nestsLoaded ? null : nests.length === 0 ? (
           <p className="p-2 text-xs text-fg-subtle">No Nests yet — create one.</p>
         ) : (
           nests.map((nest) => {
@@ -57,8 +59,8 @@ export function NestSidebar() {
                 key={nest.id}
                 to={`/nests/${nest.id}/chat`}
                 className={cn(
-                  'flex items-center gap-2 truncate rounded-md px-2 py-1.5 text-sm',
-                  nest.id === activeNestId ? 'bg-elevated text-fg' : 'text-fg-muted hover:bg-elevated hover:text-fg',
+                  'flex items-center gap-2 truncate rounded-md px-2 py-1.5 text-sm transition-shadow',
+                  nest.id === activeNestId ? 'bg-elevated text-fg shadow-sm' : 'text-fg-muted hover:bg-elevated hover:text-fg',
                 )}
               >
                 <Avatar name={identity.name} seed={nest.id} emoji={identity.icon} size="sm" />

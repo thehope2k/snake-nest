@@ -24,6 +24,8 @@ export type DoghouseRejection = 'opted-out' | 'already-benched' | 'on-cooldown' 
 
 interface NestStoreValue {
   nests: Nest[]
+  nestsLoaded: boolean
+  nestsError: string | null
   now: number
   refreshNests: () => Promise<void>
   createNest: (name: string, icon: string) => Promise<Nest>
@@ -67,6 +69,8 @@ function seedParticipants(members: User[]): Participant[] {
 export function NestStoreProvider({ children }: { children: ReactNode }) {
   const { user, token } = useAuth()
   const [nests, setNests] = useState<Nest[]>([])
+  const [nestsLoaded, setNestsLoaded] = useState(false)
+  const [nestsError, setNestsError] = useState<string | null>(null)
   const [membersByNest, setMembersByNest] = useState<Record<string, User[]>>({})
   const [messagesByNest, setMessagesByNest] = useState<Record<string, Message[]>>({})
   const [participantsByNest, setParticipantsByNest] = useState<Record<string, Participant[]>>({})
@@ -83,7 +87,14 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
 
   const refreshNests = useCallback(async () => {
     if (!token) return
-    setNests(await listNestsRequest(token))
+    try {
+      setNests(await listNestsRequest(token))
+      setNestsError(null)
+    } catch (cause) {
+      setNestsError(cause instanceof Error ? cause.message : 'Could not load your Nests.')
+    } finally {
+      setNestsLoaded(true)
+    }
   }, [token])
 
   useEffect(() => {
@@ -224,6 +235,8 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
 
   const value: NestStoreValue = {
     nests,
+    nestsLoaded,
+    nestsError,
     now,
     refreshNests,
     createNest,

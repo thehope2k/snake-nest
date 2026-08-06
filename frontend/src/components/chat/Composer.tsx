@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type SubmitEvent } from 'react'
-import { X } from 'lucide-react'
-import { Button, IconButton, Textarea } from '@/components/ui'
+import { Send, X } from 'lucide-react'
+import { EmojiPicker, IconButton, Textarea } from '@/components/ui'
 import type { Message, User } from '@/lib/types'
 
 const MAX_ROWS = 6
@@ -34,6 +34,23 @@ export function Composer({ onSend, replyingTo, onCancelReply }: ComposerProps) {
     setText('')
   }
 
+  function insertEmoji(emoji: string) {
+    const textarea = textareaRef.current
+    if (!textarea) {
+      setText((current) => current + emoji)
+      return
+    }
+    const start = textarea.selectionStart ?? text.length
+    const end = textarea.selectionEnd ?? text.length
+    const next = `${text.slice(0, start)}${emoji}${text.slice(end)}`
+    setText(next)
+    requestAnimationFrame(() => {
+      textarea.focus()
+      const caret = start + emoji.length
+      textarea.setSelectionRange(caret, caret)
+    })
+  }
+
   function handleSubmit(event: SubmitEvent) {
     event.preventDefault()
     send()
@@ -59,17 +76,33 @@ export function Composer({ onSend, replyingTo, onCancelReply }: ComposerProps) {
           </IconButton>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex items-end gap-2 p-4">
-        <Textarea
-          ref={textareaRef}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Say something you can't take back..."
-          rows={1}
-          className="resize-none"
-        />
-        <Button type="submit">Send</Button>
+      <form onSubmit={handleSubmit} className="p-4">
+        <div className="flex items-end gap-2 rounded-md border border-border bg-panel px-3 py-3 transition-colors focus-within:border-accent">
+          <Textarea
+            ref={textareaRef}
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Say something you can't take back..."
+            rows={1}
+            bare
+            style={{ outline: 'none' }}
+            className="w-full flex-1 resize-none border-none bg-transparent p-0 text-sm text-fg placeholder:text-fg-subtle"
+          />
+          <div className="flex shrink-0 items-center gap-1">
+            <EmojiPicker onSelect={insertEmoji} align="end" />
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
+            <IconButton
+              type="submit"
+              aria-label="Send message"
+              size="sm"
+              disabled={!text.trim()}
+              className={text.trim() ? 'text-accent hover:text-accent-hover' : ''}
+            >
+              <Send size={16} />
+            </IconButton>
+          </div>
+        </div>
       </form>
     </div>
   )

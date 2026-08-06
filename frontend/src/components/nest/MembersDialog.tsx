@@ -88,7 +88,7 @@ export function MembersDialog({ nest, actorUserId, trigger, onRejected }: Member
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent title={`People in ${nestIdentity(nest, members, actorUserId).name}`}>
+      <DialogContent title={`People in ${nestIdentity(nest, members, actorUserId).name}`} size="md">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search people to add..." />

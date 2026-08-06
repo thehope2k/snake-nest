@@ -10,8 +10,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ c
   return <input ref={ref} className={cn(FIELD_CHROME, className)} {...props} />
 })
 
-export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
+export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & { bare?: boolean }
 
-export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, ...props }, ref) {
-  return <textarea ref={ref} className={cn(FIELD_CHROME, className)} {...props} />
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, bare, ...props }, ref) {
+  return <textarea ref={ref} className={cn(bare ? undefined : FIELD_CHROME, className)} {...props} />
 })

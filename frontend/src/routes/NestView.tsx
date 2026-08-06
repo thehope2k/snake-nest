@@ -41,7 +41,11 @@ export function NestView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nestId])
 
-  if (!nest || !user) return <Navigate to="/nests" replace />
+  if (!user) return <Navigate to="/nests" replace />
+  if (!nest) {
+    if (!store.nestsLoaded) return null
+    return <Navigate to="/nests" replace />
+  }
 
   const identity = nestIdentity(nest, members, user.id)
   const messages = store.messagesFor(nest.id)
@@ -60,7 +64,7 @@ export function NestView() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex items-center gap-3 border-b border-border p-4">
+      <header className="flex items-center gap-4 border-b border-border p-4">
         <RenameNestDialog nest={nest} suggestedName={identity.name} />
         <nav className="ml-auto flex items-center gap-3">
           <MembersDialog
@@ -74,6 +78,7 @@ export function NestView() {
               </IconButton>
             }
           />
+          <span className="h-5 w-px bg-border" aria-hidden="true" />
           <div className="flex gap-1">
             <TabLink nestId={nest.id} view="chat" active={view === 'chat'} label="Chat" />
             <TabLink nestId={nest.id} view="meet" active={view === 'meet'} label="Meet" />

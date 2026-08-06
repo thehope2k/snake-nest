@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react'
-import { Avatar, Button, Dialog, DialogContent, DialogTrigger, Field, Input } from '@/components/ui'
+import { Avatar, Button, Dialog, DialogContent, DialogTrigger, Field, IconPicker, Input } from '@/components/ui'
 import { useNestStore } from '@/lib/nest-store'
 import { ApiError } from '@/lib/api-client'
 import { NEST_ICONS } from '@/lib/nest-icons'
@@ -62,21 +62,7 @@ export function RenameNestDialog({ nest, suggestedName, onRenamed }: RenameNestD
           <Field label="Name" hint={nest.name ? undefined : `Defaults to "${suggestedName}" if left blank`}>
             <Input value={name} onChange={(event) => setName(event.target.value)} placeholder={suggestedName} autoFocus />
           </Field>
-          <div className="flex flex-wrap gap-2">
-            {NEST_ICONS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setIcon(option)}
-                aria-pressed={icon === option}
-                className={`flex h-9 w-9 items-center justify-center rounded-md border text-lg ${
-                  icon === option ? 'border-accent bg-elevated' : 'border-border'
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
+          <IconPicker options={NEST_ICONS} value={icon} onChange={setIcon} aria-label="Nest icon" />
 
           {error && <p className="text-xs text-doghouse">{error}</p>}
 

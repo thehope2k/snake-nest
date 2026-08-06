@@ -1,5 +1,5 @@
-import { Reply } from 'lucide-react'
-import { Avatar, IconButton } from '@/components/ui'
+import { Reply, Sparkles } from 'lucide-react'
+import { Avatar, EmojiPicker, EmptyState, IconButton } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import { groupConsecutiveByAuthor } from '@/lib/chat-grouping'
 import type { Message, User } from '@/lib/types'
@@ -17,6 +17,14 @@ interface MessageListProps {
 export function MessageList({ messages, usersById, currentUserId, onReact, onReply }: MessageListProps) {
   const messagesById = new Map(messages.map((message) => [message.id, message]))
   const groups = groupConsecutiveByAuthor(messages)
+
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <EmptyState icon={Sparkles} title="No messages yet" description="Say hi — someone's bound to reply." />
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-4">
@@ -135,6 +143,7 @@ function MessageRow({ message, author, isSelf, showAvatar, showTimestamp, quoted
             {emoji}
           </button>
         ))}
+        <EmojiPicker onSelect={(emoji) => onReact(message.id, emoji)} />
         <IconButton onClick={() => onReply(message)} aria-label="Reply" size="sm" className="rounded-full">
           <Reply size={14} />
         </IconButton>
