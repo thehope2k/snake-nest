@@ -1,7 +1,7 @@
 import { LogOut, Plus } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { CreateNestDialog } from '@/components/nest/CreateNestDialog'
-import { useAuth } from '@/lib/mock-auth'
+import { useAuth } from '@/lib/auth'
 import { useNestStore } from '@/lib/nest-store'
 import { cn } from '@/lib/cn'
 

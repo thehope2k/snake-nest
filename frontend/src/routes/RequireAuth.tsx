@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAuth } from '@/lib/mock-auth'
+import { useAuth } from '@/lib/auth'
 
 export function RequireAuth() {
   const { user } = useAuth()

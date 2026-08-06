@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Message, Nest, Participant, Reaction, User } from './types'
 import { MOCK_MESSAGES, MOCK_NESTS, MOCK_USERS, seedParticipants } from './mock-data'
-import { useAuth } from './mock-auth'
+import { useAuth } from './auth'
 
 const DOGHOUSE_DURATION_MS = 60_000
 const DOGHOUSE_COOLDOWN_MS = 30_000

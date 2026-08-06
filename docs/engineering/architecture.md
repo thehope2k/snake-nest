@@ -73,7 +73,8 @@ unmute + broadcast.
 
 ## Open questions
 
-- Auth approach: own JWT issuance vs. an OAuth provider (Google/GitHub
-  login) — not yet decided, affects onboarding friction directly.
 - Deployment target: existing Oracle Cloud infra is the working
   assumption but not yet finalized.
+
+Auth approach is resolved — see
+[../decisions/0005-auth-approach.md](../decisions/0005-auth-approach.md).

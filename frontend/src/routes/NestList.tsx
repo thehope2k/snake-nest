@@ -1,6 +1,6 @@
 import { CreateNestDialog } from '@/components/nest/CreateNestDialog'
 import { useNestStore } from '@/lib/nest-store'
-import { useAuth } from '@/lib/mock-auth'
+import { useAuth } from '@/lib/auth'
 
 export function NestList() {
   const { user } = useAuth()

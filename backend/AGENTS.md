@@ -6,8 +6,30 @@ style) — read that too if you haven't.
 
 ## Status
 
-Not yet scaffolded. This file documents conventions to scaffold *with*,
-not retrofit later — see [../docs/roadmap.md](../docs/roadmap.md) Phase 1+.
+Scaffolded (Spring Boot 4.1.0, Java 21, Maven). Auth (JWT email+password)
+and the User entity exist; Nest/membership domain is next — see
+[../docs/roadmap.md](../docs/roadmap.md) Phase 1.
+
+## REST conventions
+
+- **Version every path**: `/api/v1/...`, never a bare `/api/...`. The
+  prefix lives in exactly one place —
+  `io.snakenest.nest.common.ApiPaths.V1` — controllers reference the
+  constant, they don't hardcode the string. Bumping to `/api/v2` later
+  means changing one file, not grepping every controller.
+- **Don't use `server.servlet.context-path`** for this — it would also
+  prefix `/actuator/**`, which ops tooling expects at a stable,
+  unversioned path.
+- **Lombok** is used to cut boilerplate (`@Getter`, `@RequiredArgsConstructor`,
+  `@Slf4j`) — but only for pure boilerplate. A constructor that does real
+  work (e.g. `JwtService` decoding a secret) stays hand-written, not
+  forced through `@RequiredArgsConstructor`.
+- **Auth**: JWT via a custom `OncePerRequestFilter`
+  (`JwtAuthFilter`), not Spring Security's `UserDetailsService`/form-login
+  flow — this app has no username/password *session* concept, just a
+  bearer token validated per-request. Don't let Boot's default in-memory
+  user auto-configuration linger unnoticed; if you see "Using generated
+  security password" in the logs, something's misconfigured.
 
 ## Layering
 

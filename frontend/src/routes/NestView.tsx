@@ -6,7 +6,7 @@ import { Composer } from '@/components/chat/Composer'
 import { ParticipantTile } from '@/components/meet/ParticipantTile'
 import { ToastStack, useToasts } from '@/components/meet/Toasts'
 import { MembersDialog } from '@/components/nest/MembersDialog'
-import { useAuth } from '@/lib/mock-auth'
+import { useAuth } from '@/lib/auth'
 import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
 import type { Message } from '@/lib/types'
 

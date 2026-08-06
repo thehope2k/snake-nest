@@ -1,5 +1,5 @@
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom'
-import { AuthProvider } from '@/lib/mock-auth'
+import { AuthProvider } from '@/lib/auth'
 import { NestStoreProvider } from '@/lib/nest-store'
 import { Landing } from '@/routes/Landing'
 import { RequireAuth } from '@/routes/RequireAuth'

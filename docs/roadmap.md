@@ -7,11 +7,11 @@ not feature detail (which lives in those docs).
 ## Phase 0 — Groundwork
 - [x] Scope, principles, glossary defined
 - [x] Doghouse and navigation-model decisions recorded as ADRs
-- [ ] `frontend/` (React) and `backend/` (Spring Boot) scaffolding
-- [ ] `infra/` local dev setup (docker-compose: Postgres, Redis, LiveKit)
+- [x] `frontend/` (React) and `backend/` (Spring Boot) scaffolding
+- [x] `infra/` local dev setup (docker-compose: Postgres, Redis, backend container; LiveKit still pending)
 
 ## Phase 1 — Chat MVP
-- [ ] Auth (approach TBD — see architecture.md open questions)
+- [ ] Auth: own JWT, email + password (see [decisions/0005-auth-approach.md](decisions/0005-auth-approach.md))
 - [ ] Create/join a Nest
 - [ ] Real-time messaging + persistence + reactions
 

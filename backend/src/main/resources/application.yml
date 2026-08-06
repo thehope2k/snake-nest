@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: nest-backend
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:nest}
+    username: ${DB_USER:nest}
+    password: ${DB_PASSWORD:nest}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+nest:
+  jwt:
+    # Local-dev-only default. Real deployments MUST override via JWT_SECRET env var --
+    # never commit a production secret.
+    secret: ${JWT_SECRET:tzWNrUJcU5MD2FKOrBmQhVJSIJ9DYUfb9S5gEftnLwA=}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:10080}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
