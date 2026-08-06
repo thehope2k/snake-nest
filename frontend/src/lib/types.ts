@@ -7,8 +7,8 @@ export interface User {
 
 export interface Nest {
   id: string
-  name: string
-  icon: string
+  name: string | null
+  icon: string | null
   ownerId: string
   memberIds: string[]
 }

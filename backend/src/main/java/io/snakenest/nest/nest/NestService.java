@@ -4,10 +4,12 @@ import io.snakenest.nest.common.ApiException;
 import io.snakenest.nest.nest.dto.CreateNestRequest;
 import io.snakenest.nest.nest.dto.MemberResponse;
 import io.snakenest.nest.nest.dto.NestResponse;
+import io.snakenest.nest.nest.dto.RenameNestRequest;
 import io.snakenest.nest.user.User;
 import io.snakenest.nest.user.UserRepository;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -108,6 +110,54 @@ public class NestService {
         membershipRepository.save(new NestMembership(nest.getId(), userId));
         log.info("{} joined Nest {} via invite code", userId, nest.getId());
         return toResponse(nest);
+    }
+
+    @Transactional
+    public NestResponse startConversation(UUID creatorId, List<UUID> participantIds) {
+        List<UUID> others = participantIds.stream().distinct().filter(id -> !id.equals(creatorId)).toList();
+        if (others.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Pick at least one other person");
+        }
+        List<User> found = userRepository.findAllById(others);
+        if (found.size() != others.size()) {
+            throw new ApiException(HttpStatus.NOT_FOUND, "One or more people not found");
+        }
+
+        if (others.size() == 1) {
+            Optional<Nest> existing = findExistingDirectMessage(creatorId, others.get(0));
+            if (existing.isPresent()) {
+                return toResponse(existing.get());
+            }
+        }
+
+        Nest nest = new Nest(null, null, creatorId, generateInviteCode());
+        nestRepository.save(nest);
+        membershipRepository.save(new NestMembership(nest.getId(), creatorId));
+        others.forEach(participantId -> membershipRepository.save(new NestMembership(nest.getId(), participantId)));
+        log.info("Conversation started: {} by {} with {}", nest.getId(), creatorId, others);
+        return toResponse(nest);
+    }
+
+    @Transactional
+    public NestResponse rename(UUID nestId, UUID actorId, RenameNestRequest request) {
+        requireMember(nestId, actorId);
+        Nest nest = requireNest(nestId);
+        nest.rename(request.name(), request.icon());
+        log.info("{} renamed Nest {}", actorId, nestId);
+        return toResponse(nest);
+    }
+
+    private Optional<Nest> findExistingDirectMessage(UUID userId, UUID otherUserId) {
+        List<UUID> myNestIds = membershipRepository.findByUserId(userId).stream().map(NestMembership::getNestId).toList();
+        for (Nest nest : nestRepository.findByIdInAndNameIsNull(myNestIds)) {
+            List<UUID> memberIds = membershipRepository.findByNestId(nest.getId()).stream()
+                    .map(NestMembership::getUserId)
+                    .toList();
+            if (memberIds.size() == 2 && memberIds.contains(otherUserId)) {
+                return Optional.of(nest);
+            }
+        }
+        return Optional.empty();
     }
 
     private String generateInviteCode() {

@@ -9,7 +9,10 @@ import {
   listMembersRequest,
   listNestsRequest,
   removeMemberRequest,
+  renameNestRequest,
+  searchAllUsersRequest,
   searchUsersRequest,
+  startConversationRequest,
 } from './nest-api'
 
 const DOGHOUSE_DURATION_MS = 60_000
@@ -25,6 +28,9 @@ interface NestStoreValue {
   refreshNests: () => Promise<void>
   createNest: (name: string, icon: string) => Promise<Nest>
   joinNest: (code: string) => Promise<Nest>
+  startConversation: (participantUserIds: string[]) => Promise<Nest>
+  renameNest: (nestId: string, name: string, icon: string) => Promise<Nest>
+  searchAllUsers: (query: string) => Promise<User[]>
   membersFor: (nestId: string) => User[]
   loadMembers: (nestId: string) => Promise<void>
   searchUsers: (nestId: string, query: string) => Promise<User[]>
@@ -99,6 +105,22 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     const nest = await joinNestRequest(requireToken(), code)
     setNests((current) => (current.some((n) => n.id === nest.id) ? current : [...current, nest]))
     return nest
+  }
+
+  async function startConversation(participantUserIds: string[]): Promise<Nest> {
+    const nest = await startConversationRequest(requireToken(), participantUserIds)
+    setNests((current) => (current.some((n) => n.id === nest.id) ? current : [...current, nest]))
+    return nest
+  }
+
+  async function renameNest(nestId: string, name: string, icon: string): Promise<Nest> {
+    const updated = await renameNestRequest(requireToken(), nestId, name, icon)
+    setNests((current) => current.map((n) => (n.id === nestId ? updated : n)))
+    return updated
+  }
+
+  function searchAllUsers(query: string): Promise<User[]> {
+    return searchAllUsersRequest(requireToken(), query)
   }
 
   function membersFor(nestId: string): User[] {
@@ -206,6 +228,9 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     refreshNests,
     createNest,
     joinNest,
+    startConversation,
+    renameNest,
+    searchAllUsers,
     membersFor,
     loadMembers,
     searchUsers,

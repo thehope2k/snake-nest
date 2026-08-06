@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-nest-name-icon-nullable
+      author: nest
+      changes:
+        - dropNotNullConstraint:
+            tableName: nest
+            columnName: name
+            columnDataType: varchar(255)
+        - dropNotNullConstraint:
+            tableName: nest
+            columnName: icon
+            columnDataType: varchar(255)

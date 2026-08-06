@@ -7,6 +7,8 @@ import io.snakenest.nest.nest.dto.InviteCodeResponse;
 import io.snakenest.nest.nest.dto.JoinNestRequest;
 import io.snakenest.nest.nest.dto.MemberResponse;
 import io.snakenest.nest.nest.dto.NestResponse;
+import io.snakenest.nest.nest.dto.RenameNestRequest;
+import io.snakenest.nest.nest.dto.StartConversationRequest;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +40,17 @@ public class NestController {
     @GetMapping
     public ResponseEntity<List<NestResponse>> listMine(Authentication auth) {
         return ResponseEntity.ok(nestService.listMyNests(userId(auth)));
+    }
+
+    @PostMapping("/start")
+    public ResponseEntity<NestResponse> start(@Valid @RequestBody StartConversationRequest request, Authentication auth) {
+        return ResponseEntity.ok(nestService.startConversation(userId(auth), request.participantUserIds()));
+    }
+
+    @PatchMapping("/{nestId}")
+    public ResponseEntity<NestResponse> rename(
+            @PathVariable UUID nestId, @RequestBody RenameNestRequest request, Authentication auth) {
+        return ResponseEntity.ok(nestService.rename(nestId, userId(auth), request));
     }
 
     @GetMapping("/{nestId}")

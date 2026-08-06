@@ -21,10 +21,10 @@ public class Nest {
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false)
+    @Column
     private String name;
 
-    @Column(nullable = false)
+    @Column
     private String icon;
 
     @Column(nullable = false)
@@ -41,5 +41,10 @@ public class Nest {
         this.icon = icon;
         this.ownerId = ownerId;
         this.inviteCode = inviteCode;
+    }
+
+    public void rename(String name, String icon) {
+        this.name = name;
+        this.icon = icon;
     }
 }

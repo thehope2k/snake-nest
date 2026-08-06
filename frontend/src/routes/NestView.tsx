@@ -8,6 +8,7 @@ import { ToastStack, useToasts } from '@/components/meet/Toasts'
 import { MembersDialog } from '@/components/nest/MembersDialog'
 import { useAuth } from '@/lib/auth'
 import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
+import { nestIdentity } from '@/lib/nest-identity'
 import type { Message } from '@/lib/types'
 
 const REJECTION_COPY: Record<DoghouseRejection, string> = {
@@ -39,6 +40,7 @@ export function NestView() {
 
   if (!nest || !user) return <Navigate to="/nests" replace />
 
+  const identity = nestIdentity(nest, members, user.id)
   const messages = store.messagesFor(nest.id)
   const participants = store.participantsFor(nest.id)
   const isOwner = nest.ownerId === user.id
@@ -56,8 +58,8 @@ export function NestView() {
   return (
     <div className="flex min-h-full flex-col">
       <header className="flex items-center gap-3 border-b border-border p-4">
-        <span className="text-xl">{nest.icon}</span>
-        <h1 className="text-base font-semibold">{nest.name}</h1>
+        <span className="text-xl">{identity.icon}</span>
+        <h1 className="text-base font-semibold">{identity.name}</h1>
         <nav className="ml-auto flex items-center gap-3">
           <MembersDialog
             nest={nest}

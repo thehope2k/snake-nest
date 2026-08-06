@@ -43,3 +43,16 @@ export function getInviteCodeRequest(token: string, nestId: string): Promise<str
 export function joinNestRequest(token: string, code: string): Promise<Nest> {
   return apiRequest<Nest>('/nests/join', { method: 'POST', token, body: { code } })
 }
+
+export function searchAllUsersRequest(token: string, query: string): Promise<User[]> {
+  const params = new URLSearchParams({ query })
+  return apiRequest<MemberDto[]>(`/users/search?${params}`, { token }).then((members) => members.map(toUser))
+}
+
+export function startConversationRequest(token: string, participantUserIds: string[]): Promise<Nest> {
+  return apiRequest<Nest>('/nests/start', { method: 'POST', token, body: { participantUserIds } })
+}
+
+export function renameNestRequest(token: string, nestId: string, name: string, icon: string): Promise<Nest> {
+  return apiRequest<Nest>(`/nests/${nestId}`, { method: 'PATCH', token, body: { name, icon } })
+}

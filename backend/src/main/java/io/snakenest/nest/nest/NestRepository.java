@@ -9,5 +9,7 @@ public interface NestRepository extends JpaRepository<Nest, UUID> {
 
     List<Nest> findByIdIn(List<UUID> ids);
 
+    List<Nest> findByIdInAndNameIsNull(List<UUID> ids);
+
     Optional<Nest> findByInviteCode(String inviteCode);
 }

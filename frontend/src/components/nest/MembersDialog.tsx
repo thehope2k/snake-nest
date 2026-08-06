@@ -13,6 +13,7 @@ import {
 } from '@/components/ui'
 import type { Nest, User } from '@/lib/types'
 import { useNestStore } from '@/lib/nest-store'
+import { nestIdentity } from '@/lib/nest-identity'
 import { ApiError } from '@/lib/api-client'
 
 interface MembersDialogProps {
@@ -85,7 +86,7 @@ export function MembersDialog({ nest, actorUserId, trigger, onRejected }: Member
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent title={`People in ${nest.name}`}>
+      <DialogContent title={`People in ${nestIdentity(nest, members, actorUserId).name}`}>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search people to add..." />
