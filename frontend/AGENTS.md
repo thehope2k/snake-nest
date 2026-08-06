@@ -19,11 +19,15 @@ hand-rolling. Full rationale:
 ## Design tokens
 
 Defined once in a global stylesheet, exposed to Tailwind as utilities.
+Full rationale for tone/personality: [../docs/product/ux-philosophy.md](../docs/product/ux-philosophy.md).
 
 - Exactly **three base values**: `--background`, `--foreground`,
   `--accent`. Everything else (`--elevated`, `--elevated-2`,
   `--fg-muted`, `--fg-subtle`, `--border`, `--border-strong`, hover/
   active states) is *derived* via OKLCH + `color-mix`.
+- **Single theme (dark) for now** — no `prefers-color-scheme`/light
+  branching. See ux-philosophy.md for why; revisit there first if this
+  changes, don't just add a light branch ad hoc.
 - Sub-feature accent tokens (e.g. a "doghouse red", "roast orange") are
   derived the same way, not new arbitrary hex values.
 - **No new base color literals** without revisiting ADR 0003.

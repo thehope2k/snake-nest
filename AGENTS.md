@@ -24,6 +24,7 @@ Read these, in order, before proposing product or architecture changes:
 |---|---|
 | [docs/product/scope.md](docs/product/scope.md) | What this is, who it's for, what's explicitly out |
 | [docs/product/principles.md](docs/product/principles.md) | Durable product philosophy |
+| [docs/product/ux-philosophy.md](docs/product/ux-philosophy.md) | Visual/interaction philosophy: minimalist chrome, humor in moments not decoration, single dark theme |
 | [docs/product/glossary.md](docs/product/glossary.md) | Terminology (Nest, Chat, Meet, Doghouse...) |
 | [docs/features/chat.md](docs/features/chat.md) / [meet.md](docs/features/meet.md) | Pillar + sub-feature specs, per-feature status |
 | [docs/decisions/](docs/decisions/) | ADRs — why a significant technical/product call was made |

@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.14 0.005 270);
+  --foreground: oklch(0.96 0.003 270);
+  --accent: oklch(0.72 0.19 155);
+}
+
+@theme inline {
+  --color-app: var(--background);
+  --color-panel: oklch(from var(--background) calc(l + 0.05) c h);
+  --color-elevated: oklch(from var(--background) calc(l + 0.09) c h);
+  --color-elevated-2: oklch(from var(--background) calc(l + 0.14) c h);
+
+  --color-fg: var(--foreground);
+  --color-fg-muted: oklch(from var(--foreground) 0.74 c h);
+  --color-fg-subtle: oklch(from var(--foreground) 0.58 c h);
+
+  --color-border: oklch(from var(--foreground) l c h / 0.14);
+  --color-border-strong: oklch(from var(--foreground) l c h / 0.32);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: color-mix(in oklch, white 12%, var(--accent));
+  --color-accent-fg: oklch(0.99 0 0);
+
+  --color-doghouse: oklch(0.68 0.21 25);
+  --color-doghouse-fg: oklch(0.99 0 0);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-app);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}

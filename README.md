@@ -25,6 +25,7 @@ product surfaces instead of an afterthought. Full reasoning in
 
 - [docs/product/scope.md](docs/product/scope.md) — what this is, who it's for, what's out of scope
 - [docs/product/principles.md](docs/product/principles.md) — durable product principles
+- [docs/product/ux-philosophy.md](docs/product/ux-philosophy.md) — visual/interaction philosophy, single dark theme rationale, tone of voice
 - [docs/product/glossary.md](docs/product/glossary.md) — terminology (Nest, Chat, Meet, Doghouse...)
 - [docs/features/chat.md](docs/features/chat.md) / [docs/features/meet.md](docs/features/meet.md) — pillar specs +
   sub-features
