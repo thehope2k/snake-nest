@@ -4,6 +4,7 @@ import { Phone, PhoneOff, Users } from 'lucide-react'
 import { IconButton } from '@/components/ui'
 import { MessageList } from '@/components/chat/MessageList'
 import { Composer } from '@/components/chat/Composer'
+import { PreJoinDialog } from '@/components/meet/PreJoinDialog'
 import { ToastStack, useToasts } from '@/components/meet/Toasts'
 import { MembersDialog } from '@/components/nest/MembersDialog'
 import { RenameNestDialog } from '@/components/nest/RenameNestDialog'
@@ -17,7 +18,7 @@ export function NestView() {
   const { nestId } = useParams<{ nestId: string }>()
   const { user } = useAuth()
   const store = useNestStore()
-  const { activeNestId, status, joinCall, leaveCall } = useMeetCall()
+  const { activeNestId, status: callStatus, leaveCall } = useMeetCall()
   const { toasts, pushToast, dismiss } = useToasts()
   const [replyingTo, setReplyingTo] = useState<Message | null>(null)
 
@@ -74,13 +75,15 @@ export function NestView() {
               <PhoneOff size={16} />
             </IconButton>
           ) : (
-            <IconButton
-              aria-label="Start a call"
-              onClick={() => joinCall(nest.id)}
-              disabled={status === 'connecting'}
-            >
-              <Phone size={16} />
-            </IconButton>
+            <PreJoinDialog
+              nestId={nest.id}
+              nestName={identity.name}
+              trigger={
+                <IconButton aria-label="Start a call" disabled={callStatus === 'connecting'}>
+                  <Phone size={16} />
+                </IconButton>
+              }
+            />
           )}
         </nav>
       </header>

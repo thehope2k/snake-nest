@@ -135,7 +135,11 @@ that's the next piece to wire up.
   other Nest currently has a call running before you switch to it.
   Mic starts on when you join; camera starts off and is a manual
   toggle, so joining a casual call never surprises anyone with an
-  unannounced camera. The floating control's collapsed pill is meant
+  unannounced camera. Joining itself isn't instant, either: a
+  Teams-style pre-join step shows a real camera preview and lets you
+  set mic/camera state before the room connection is even made, so you
+  can check yourself first rather than landing in the call already live.
+  The floating control's collapsed pill is meant
   for ambient awareness only; an expand action opens a larger view with
   real video tiles at a usable size for actually looking at people, and
   collapses back down to the pill rather than being a separate page.

@@ -1,9 +1,18 @@
-import { Room } from 'livekit-client'
+import { LocalVideoTrack, Room } from 'livekit-client'
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useAuth } from './auth'
 import { joinMeetRequest, leaveMeetRequest, type MeetParticipant } from './meet-api'
 
 export type MeetCallStatus = 'idle' | 'connecting' | 'connected' | 'error'
+
+export interface JoinCallOptions {
+  microphoneEnabled?: boolean
+  cameraEnabled?: boolean
+  /** A preview track already created (and permission-granted) by PreJoinDialog -- publish
+   * it directly instead of requesting the camera again, which would cause a visible
+   * off/on flicker right as you join. */
+  previewVideoTrack?: LocalVideoTrack | null
+}
 
 interface MeetCallValue {
   activeNestId: string | null
@@ -11,7 +20,7 @@ interface MeetCallValue {
   room: Room | null
   participants: MeetParticipant[]
   error: string | null
-  joinCall: (nestId: string) => Promise<void>
+  joinCall: (nestId: string, options?: JoinCallOptions) => Promise<void>
   leaveCall: () => Promise<void>
 }
 
@@ -45,7 +54,7 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
     [],
   )
 
-  async function joinCall(nestId: string) {
+  async function joinCall(nestId: string, options?: JoinCallOptions) {
     if (!token) return
     if (activeNestIdRef.current === nestId) return
     if (activeNestIdRef.current) await leaveCall()
@@ -56,11 +65,24 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
       const response = await joinMeetRequest(token, nestId)
       const nextRoom = new Room()
       await nextRoom.connect(response.livekitUrl, response.token)
+
       try {
-        await nextRoom.localParticipant.setMicrophoneEnabled(true)
+        await nextRoom.localParticipant.setMicrophoneEnabled(options?.microphoneEnabled ?? true)
       } catch {
         // Mic permission denied/unavailable shouldn't block joining the call itself —
         // you can still hear others and retry unmuting later.
+      }
+
+      if (options?.cameraEnabled) {
+        try {
+          if (options.previewVideoTrack) {
+            await nextRoom.localParticipant.publishTrack(options.previewVideoTrack)
+          } else {
+            await nextRoom.localParticipant.setCameraEnabled(true)
+          }
+        } catch {
+          // Same reasoning as mic -- camera failing to publish shouldn't block the join.
+        }
       }
 
       roomRef.current = nextRoom
