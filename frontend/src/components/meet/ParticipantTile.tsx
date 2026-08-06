@@ -71,8 +71,8 @@ export function ParticipantTile({
       <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
         {!isSelf && !isBenched && (
           <Tooltip label="Send to Doghouse">
-            <IconButton aria-label="Send to Doghouse" size="sm" className="bg-black/60 text-white hover:bg-black/80" onClick={onSendToDoghouse}>
-              <Dog size={14} />
+            <IconButton aria-label="Send to Doghouse" size="md" className="bg-black/60 text-white hover:bg-black/80" onClick={onSendToDoghouse}>
+              <Dog size={18} />
             </IconButton>
           </Tooltip>
         )}
