@@ -1,6 +1,6 @@
-import { Mic, MicOff } from 'lucide-react'
+import { Dog, DoorOpen, Mic, MicOff } from 'lucide-react'
 import { VideoTrack, type TrackReference } from '@livekit/components-react'
-import { Avatar, Button, Toggle } from '@/components/ui'
+import { Avatar, IconButton, Toggle, Tooltip } from '@/components/ui'
 import { cn } from '@/lib/cn'
 import { DOGHOUSE_DURATION_MS } from '@/lib/nest-store'
 import type { Participant, User } from '@/lib/types'
@@ -32,71 +32,69 @@ export function ParticipantTile({
 }: ParticipantTileProps) {
   const isBenched = Boolean(participant.doghouseUntil && participant.doghouseUntil > now)
   const secondsLeft = isBenched ? Math.ceil((participant.doghouseUntil! - now) / MS_PER_SECOND) : 0
-  const percentRemaining = isBenched ? Math.round(((participant.doghouseUntil! - now) / DOGHOUSE_DURATION_MS) * 100) : 0
+  const benchedPercentRemaining = isBenched
+    ? Math.round(((participant.doghouseUntil! - now) / DOGHOUSE_DURATION_MS) * 100)
+    : 0
 
   return (
     <div
-      key={participant.doghouseUntil ?? 'idle'}
       className={cn(
-        'relative flex flex-col items-center gap-2 rounded-lg border p-5 text-center shadow-sm transition-[opacity,filter,border-color,box-shadow] duration-slow ease-standard hover:shadow-md',
+        'relative aspect-video w-full max-h-full overflow-hidden rounded-lg border bg-elevated-2 transition-[opacity,filter,border-color] duration-slow ease-standard',
         isBenched ? 'border-doghouse opacity-60 grayscale animate-doghouse-enter' : 'border-border',
       )}
     >
-      {isBenched && <span className="absolute right-3 top-2 text-xs font-semibold text-doghouse">{secondsLeft}s</span>}
-
       {videoTrackRef ? (
-        <div className="relative aspect-video w-full overflow-hidden rounded-md bg-elevated-2">
-          <VideoTrack trackRef={videoTrackRef} className={cn('h-full w-full object-cover', isBenched && 'grayscale')} />
-          <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
-            {isBenched ? <MicOff size={12} className="text-doghouse" /> : <Mic size={12} />}
-            {user.name}
-            {isSelf ? ' (you)' : ''}
-          </span>
-        </div>
+        <VideoTrack trackRef={videoTrackRef} className="h-full w-full object-cover" />
       ) : (
-        <>
-          {isBenched ? <MicOff size={24} className="text-doghouse" /> : <Mic size={24} className="text-fg-muted" />}
+        <div className="flex h-full items-center justify-center">
           {isBenched ? (
             <span
               className="rounded-full p-0.5 transition-[background] duration-base"
-              style={{ background: `conic-gradient(var(--color-doghouse) ${percentRemaining}%, transparent ${percentRemaining}%)` }}
+              style={{ background: `conic-gradient(var(--color-doghouse) ${benchedPercentRemaining}%, transparent ${benchedPercentRemaining}%)` }}
             >
               <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
             </span>
           ) : (
             <Avatar name={user.name} seed={user.id} emoji={user.avatar} size="lg" />
           )}
-          <span className="text-sm font-medium">
-            {user.name}
-            {isSelf ? ' (you)' : ''}
-          </span>
-        </>
+        </div>
       )}
 
-      {isBenched ? (
-        <span className="text-xs font-semibold text-doghouse">🐕 in the doghouse</span>
-      ) : (
-        <span className="text-xs text-fg-subtle">sent {participant.doghouseCount}x</span>
-      )}
+      <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+        {isBenched ? `${secondsLeft}s in the doghouse` : `sent ${participant.doghouseCount}x`}
+      </span>
 
-      {!isSelf && !isBenched && (
-        <Button variant="ghost" className="h-auto p-0 text-xs" onClick={onSendToDoghouse}>
-          send to Doghouse
-        </Button>
-      )}
+      <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white">
+        {isBenched ? <MicOff size={12} className="text-doghouse" /> : <Mic size={12} />}
+        {user.name}
+        {isSelf ? ' (you)' : ''}
+      </span>
 
-      {isBenched && canRelease && (
-        <Button variant="ghost" className="h-auto p-0 text-xs" onClick={onRelease}>
-          release early (owner)
-        </Button>
-      )}
+      <div className="absolute bottom-1.5 right-1.5 flex items-center gap-1">
+        {!isSelf && !isBenched && (
+          <Tooltip label="Send to Doghouse">
+            <IconButton aria-label="Send to Doghouse" size="sm" className="bg-black/60 text-white hover:bg-black/80" onClick={onSendToDoghouse}>
+              <Dog size={14} />
+            </IconButton>
+          </Tooltip>
+        )}
 
-      {isSelf && (
-        <label className="mt-1 flex items-center gap-2 text-xs text-fg-subtle">
-          opt out of Doghouse
-          <Toggle checked={participant.doghouseOptOut} onChange={onToggleOptOut} label="Opt out of Doghouse" />
-        </label>
-      )}
+        {isBenched && canRelease && (
+          <Tooltip label="Release early (owner)">
+            <IconButton aria-label="Release early (owner)" size="sm" className="bg-black/60 text-white hover:bg-black/80" onClick={onRelease}>
+              <DoorOpen size={14} />
+            </IconButton>
+          </Tooltip>
+        )}
+
+        {isSelf && (
+          <Tooltip label="Opt out of Doghouse">
+            <span className="rounded-full bg-black/60 p-1">
+              <Toggle checked={participant.doghouseOptOut} onChange={onToggleOptOut} label="Opt out of Doghouse" />
+            </span>
+          </Tooltip>
+        )}
+      </div>
     </div>
   )
 }

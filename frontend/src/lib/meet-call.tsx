@@ -20,6 +20,8 @@ interface MeetCallValue {
   room: Room | null
   participants: MeetParticipant[]
   error: string | null
+  expanded: boolean
+  setExpanded: (expanded: boolean) => void
   joinCall: (nestId: string, options?: JoinCallOptions) => Promise<void>
   leaveCall: () => Promise<void>
 }
@@ -36,6 +38,7 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
   const [room, setRoom] = useState<Room | null>(null)
   const [participants, setParticipants] = useState<MeetParticipant[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [expanded, setExpanded] = useState(false)
   const roomRef = useRef<Room | null>(null)
   const activeNestIdRef = useRef<string | null>(null)
 
@@ -91,6 +94,7 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
       setActiveNestId(nestId)
       setParticipants(response.participants)
       setStatus('connected')
+      setExpanded(true)
     } catch (cause) {
       setStatus('error')
       setError(cause instanceof Error ? cause.message : 'Could not join the call.')
@@ -106,6 +110,7 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
     setActiveNestId(null)
     setParticipants([])
     setStatus('idle')
+    setExpanded(false)
 
     currentRoom?.disconnect()
     if (nestId && token) {
@@ -117,7 +122,7 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value: MeetCallValue = { activeNestId, status, room, participants, error, joinCall, leaveCall }
+  const value: MeetCallValue = { activeNestId, status, room, participants, error, expanded, setExpanded, joinCall, leaveCall }
 
   return <MeetCallContext.Provider value={value}>{children}</MeetCallContext.Provider>
 }

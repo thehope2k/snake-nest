@@ -6,12 +6,11 @@ import { cn } from '@/lib/cn'
 export const Dialog = RadixDialog.Root
 export const DialogTrigger = RadixDialog.Trigger
 
-export type DialogSize = 'sm' | 'md' | 'full'
+export type DialogSize = 'sm' | 'md'
 
 const SIZE_CLASSES: Record<DialogSize, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
-  full: 'flex h-[85vh] w-[95vw] max-w-6xl flex-col',
 }
 
 export interface DialogContentProps {

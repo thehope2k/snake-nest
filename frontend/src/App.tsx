@@ -1,4 +1,5 @@
 import { Navigate, Route, BrowserRouter, Routes } from 'react-router-dom'
+import { TooltipProvider } from '@/components/ui'
 import { AuthProvider } from '@/lib/auth'
 import { NestSocketProvider } from '@/lib/nest-socket'
 import { NestStoreProvider } from '@/lib/nest-store'
@@ -12,27 +13,29 @@ import { NestView } from '@/routes/NestView'
 
 export default function App() {
   return (
-    <AuthProvider>
-      <NestSocketProvider>
-        <NestStoreProvider>
-          <MeetCallProvider>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/sign-in" element={<Navigate to="/" replace />} />
-                <Route element={<RequireAuth />}>
-                  <Route element={<AppShell />}>
-                    <Route path="/nests" element={<NestList />} />
-                    <Route path="/nests/:nestId" element={<NestView />} />
+    <TooltipProvider>
+      <AuthProvider>
+        <NestSocketProvider>
+          <NestStoreProvider>
+            <MeetCallProvider>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/sign-in" element={<Navigate to="/" replace />} />
+                  <Route element={<RequireAuth />}>
+                    <Route element={<AppShell />}>
+                      <Route path="/nests" element={<NestList />} />
+                      <Route path="/nests/:nestId" element={<NestView />} />
+                    </Route>
                   </Route>
-                </Route>
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-              <FloatingCallWidget />
-            </BrowserRouter>
-          </MeetCallProvider>
-        </NestStoreProvider>
-      </NestSocketProvider>
-    </AuthProvider>
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                <FloatingCallWidget />
+              </BrowserRouter>
+            </MeetCallProvider>
+          </NestStoreProvider>
+        </NestSocketProvider>
+      </AuthProvider>
+    </TooltipProvider>
   )
 }
