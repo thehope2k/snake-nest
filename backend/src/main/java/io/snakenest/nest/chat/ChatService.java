@@ -14,9 +14,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Limit;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final MessageReactionRepository reactionRepository;
     private final NestMembershipRepository membershipRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public List<MessageResponse> listMessages(UUID nestId, UUID requesterId, Instant before, Integer limit) {
@@ -86,7 +86,7 @@ public class ChatService {
     }
 
     private void broadcast(UUID nestId, ChatEvent event) {
-        messagingTemplate.convertAndSend("/topic/nests/" + nestId + "/chat", event);
+        eventPublisher.publishEvent(new ChatBroadcastEvent(nestId, event));
     }
 
     private Map<UUID, List<MessageReaction>> reactionsFor(List<Message> messages) {
