@@ -1,0 +1,26 @@
+{
+	# {$SITE_ADDRESS} defaults to plain :80 (bare IP, no TLS) until a domain is
+	# set -- see docker-compose.prod.yml. Point a domain at this VM, set
+	# SITE_ADDRESS=your.domain in .env, and Caddy issues/renews a real cert
+	# automatically. No config change needed beyond that env var.
+}
+
+{$SITE_ADDRESS::80} {
+	# Live chat/Meet events over STOMP -- must reach the backend directly,
+	# not the frontend's static files.
+	handle /ws/* {
+		reverse_proxy backend:8080
+	}
+
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+
+	handle /actuator/* {
+		reverse_proxy backend:8080
+	}
+
+	handle {
+		reverse_proxy frontend:80
+	}
+}
