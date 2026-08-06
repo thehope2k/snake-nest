@@ -66,14 +66,19 @@ services:
   backend:
     image: ghcr.io/${GITHUB_REPOSITORY:-thehope2k/snake-nest}-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
-    mem_limit: 300m
+    mem_limit: 380m
     environment:
       # JAVA_TOOL_OPTIONS is auto-picked-up by any JVM launch (no Dockerfile/
       # entrypoint change needed). Caps heap well under the container's
       # mem_limit, leaving room for JVM non-heap (metaspace, thread stacks,
       # code cache) -- without this the JVM's ergonomic default (~25% of
       # visible host RAM) kept growing until the box ran out of memory.
-      JAVA_TOOL_OPTIONS: "-Xmx128m -Xss256k -XX:MaxMetaspaceSize=80m"
+      # MaxMetaspaceSize was previously 80m and caused severe GC thrashing
+      # (Spring Boot + Hibernate + Liquibase class loading needs more headroom
+      # than that -- startup took 10+ minutes instead of ~30s, CPU pegged at
+      # ~1000% from GC threads fighting for metaspace). 200m gives it room;
+      # heap stays modest since that's not what was actually undersized.
+      JAVA_TOOL_OPTIONS: "-Xmx140m -Xss256k -XX:MaxMetaspaceSize=200m"
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: nest
