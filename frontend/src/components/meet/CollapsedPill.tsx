@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Camera, CameraOff, Maximize2, Mic, MicOff, PhoneOff } from 'lucide-react'
 import { Avatar, Badge, IconButton } from '@/components/ui'
-import { useMeetCall } from '@/lib/meet-call'
+import { useMeetCall } from '@/lib/meet-call-context'
 import { useActiveCall } from './useActiveCall'
 import { ToastStack } from './Toasts'
 

@@ -1,7 +1,8 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import type { User } from './types'
 import { ApiError } from './api-client'
 import { loginRequest, registerRequest, type AuthResponse } from './auth-api'
+import { AuthContext } from './auth-context'
 
 const STORAGE_KEY = 'nest.session'
 
@@ -9,16 +10,6 @@ interface Session {
   token: string
   user: User
 }
-
-interface AuthContextValue {
-  user: User | null
-  token: string | null
-  signUp: (email: string, password: string, displayName: string) => Promise<void>
-  signIn: (email: string, password: string) => Promise<void>
-  signOut: () => void
-}
-
-const AuthContext = createContext<AuthContextValue | null>(null)
 
 function loadSession(): Session | null {
   const raw = localStorage.getItem(STORAGE_KEY)
@@ -63,12 +54,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth(): AuthContextValue {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
-  return context
 }
 
 export { ApiError }

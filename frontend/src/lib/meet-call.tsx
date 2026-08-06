@@ -1,32 +1,10 @@
-import { LocalVideoTrack, Room } from 'livekit-client'
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { useAuth } from './auth'
+import { Room } from 'livekit-client'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useAuth } from './auth-context'
 import { joinMeetRequest, leaveMeetRequest, type MeetParticipant } from './meet-api'
+import { MeetCallContext, type JoinCallOptions, type MeetCallStatus, type MeetCallValue } from './meet-call-context'
 
-export type MeetCallStatus = 'idle' | 'connecting' | 'connected' | 'error'
-
-export interface JoinCallOptions {
-  microphoneEnabled?: boolean
-  cameraEnabled?: boolean
-  /** A preview track already created (and permission-granted) by PreJoinDialog -- publish
-   * it directly instead of requesting the camera again, which would cause a visible
-   * off/on flicker right as you join. */
-  previewVideoTrack?: LocalVideoTrack | null
-}
-
-interface MeetCallValue {
-  activeNestId: string | null
-  status: MeetCallStatus
-  room: Room | null
-  participants: MeetParticipant[]
-  error: string | null
-  expanded: boolean
-  setExpanded: (expanded: boolean) => void
-  joinCall: (nestId: string, options?: JoinCallOptions) => Promise<void>
-  leaveCall: () => Promise<void>
-}
-
-const MeetCallContext = createContext<MeetCallValue | null>(null)
+export type { MeetCallStatus, JoinCallOptions }
 
 // Owns the single LiveKit Room connection for the whole app — deliberately not scoped to
 // NestView, so joining a call doesn't get torn down by navigating to a different Nest or
@@ -125,10 +103,4 @@ export function MeetCallProvider({ children }: { children: ReactNode }) {
   const value: MeetCallValue = { activeNestId, status, room, participants, error, expanded, setExpanded, joinCall, leaveCall }
 
   return <MeetCallContext.Provider value={value}>{children}</MeetCallContext.Provider>
-}
-
-export function useMeetCall(): MeetCallValue {
-  const context = useContext(MeetCallContext)
-  if (!context) throw new Error('useMeetCall must be used within MeetCallProvider')
-  return context
 }

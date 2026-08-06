@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client'
 import { Camera, CameraOff, Mic, MicOff, VideoOff } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogTrigger, IconButton } from '@/components/ui'
-import { useMeetCall } from '@/lib/meet-call'
+import { useMeetCall } from '@/lib/meet-call-context'
 
 interface PreJoinDialogProps {
   nestId: string

@@ -1,7 +1,7 @@
 import { MessagesSquare } from 'lucide-react'
 import { EmptyState } from '@/components/ui'
 import { CreateNestDialog } from '@/components/nest/CreateNestDialog'
-import { useNestStore } from '@/lib/nest-store'
+import { useNestStore } from '@/lib/nest-store-context'
 
 export function NestList() {
   const { nests, nestsLoaded, nestsError } = useNestStore()

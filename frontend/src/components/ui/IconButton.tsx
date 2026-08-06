@@ -1,14 +1,9 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
+import type { IconButtonSize } from './icon-button-constants'
 
-export type IconButtonSize = 'sm' | 'md' | 'lg'
+export type { IconButtonSize }
 export type IconButtonVariant = 'ghost' | 'primary'
-
-export const ICON_PIXEL_SIZE: Record<IconButtonSize, number> = {
-  sm: 14,
-  md: 16,
-  lg: 20,
-}
 
 const HIT_TARGET_CLASSES: Record<IconButtonSize, string> = {
   sm: 'h-7 w-7',

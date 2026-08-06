@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Avatar, Button, Dialog, DialogContent, DialogTrigger, Input } from '@/components/ui'
-import { useNestStore } from '@/lib/nest-store'
+import { useNestStore } from '@/lib/nest-store-context'
 import { ApiError } from '@/lib/api-client'
 import type { User } from '@/lib/types'
 

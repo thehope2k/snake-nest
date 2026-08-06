@@ -1,5 +1,5 @@
 import { RoomAudioRenderer, RoomContext } from '@livekit/components-react'
-import { useMeetCall } from '@/lib/meet-call'
+import { useMeetCall } from '@/lib/meet-call-context'
 import { CollapsedPill } from './CollapsedPill'
 import { ExpandedCallView } from './ExpandedCallView'
 

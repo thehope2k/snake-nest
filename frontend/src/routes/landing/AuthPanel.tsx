@@ -1,7 +1,8 @@
 import { useState, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Field, Input } from '@/components/ui'
-import { ApiError, useAuth } from '@/lib/auth'
+import { ApiError } from '@/lib/auth'
+import { useAuth } from '@/lib/auth-context'
 
 type Mode = 'sign-in' | 'sign-up'
 

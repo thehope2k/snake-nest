@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useNestStore } from './nest-store'
+import { useNestStore } from './nest-store-context'
 
 // Tracks per-nest "seen" message counts client-side. Once real read-receipts
 // arrive over WebSocket (see architecture.md), swap the ref for server state

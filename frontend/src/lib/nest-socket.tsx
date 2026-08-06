@@ -1,7 +1,8 @@
 import { Client } from '@stomp/stompjs'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { apiOrigin } from './api-client'
-import { useAuth } from './auth'
+import { useAuth } from './auth-context'
+import { NestSocketContext } from './nest-socket-context'
 
 // Chat and Meet both subscribe to /topic/nests/{nestId}/... on the same authenticated
 // STOMP connection — one client shared via context, not one per feature.
@@ -16,8 +17,6 @@ function createNestSocket(token: string): Client {
     reconnectDelay: 3_000,
   })
 }
-
-const NestSocketContext = createContext<{ client: Client | null; connected: boolean }>({ client: null, connected: false })
 
 export function NestSocketProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth()
@@ -44,11 +43,4 @@ export function NestSocketProvider({ children }: { children: ReactNode }) {
   }, [token])
 
   return <NestSocketContext.Provider value={{ client, connected }}>{children}</NestSocketContext.Provider>
-}
-
-// A STOMP Client only has one onConnect/onDisconnect slot, so every consumer racing to
-// overwrite it directly would clobber each other. Reading `connected` as reactive state
-// instead lets multiple features (chat, Meet presence) subscribe independently.
-export function useNestSocket(): { client: Client | null; connected: boolean } {
-  return useContext(NestSocketContext)
 }

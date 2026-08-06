@@ -2,7 +2,7 @@ import { useState, type ReactNode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CirclePlus } from 'lucide-react'
 import { Button, Dialog, DialogContent, DialogTrigger, Field, IconPicker, Input, Tabs } from '@/components/ui'
-import { useNestStore } from '@/lib/nest-store'
+import { useNestStore } from '@/lib/nest-store-context'
 import { ApiError } from '@/lib/api-client'
 import { NEST_ICONS } from '@/lib/nest-icons'
 

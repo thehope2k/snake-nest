@@ -1,6 +1,6 @@
 import { useState, type SubmitEvent } from 'react'
 import { Avatar, Button, Dialog, DialogContent, DialogTrigger, Field, IconPicker, Input } from '@/components/ui'
-import { useNestStore } from '@/lib/nest-store'
+import { useNestStore } from '@/lib/nest-store-context'
 import { ApiError } from '@/lib/api-client'
 import { NEST_ICONS } from '@/lib/nest-icons'
 import type { Nest } from '@/lib/types'

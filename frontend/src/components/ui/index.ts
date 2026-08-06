@@ -24,10 +24,12 @@ export type { DropdownMenuItemProps } from './DropdownMenu'
 export { Avatar } from './Avatar'
 export type { AvatarProps, AvatarSize } from './Avatar'
 
-export { IconButton, ICON_PIXEL_SIZE } from './IconButton'
+export { IconButton } from './IconButton'
+export { ICON_PIXEL_SIZE } from './icon-button-constants'
 export type { IconButtonProps, IconButtonSize, IconButtonVariant } from './IconButton'
 
-export { Tabs, tabTriggerClass } from './Tabs'
+export { Tabs } from './Tabs'
+export { tabTriggerClass } from './tab-styles'
 export type { TabsProps, TabItem } from './Tabs'
 
 export { IconPicker } from './IconPicker'
