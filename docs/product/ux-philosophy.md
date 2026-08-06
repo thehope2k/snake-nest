@@ -51,6 +51,19 @@ like the Doghouse tile's grayscale/countdown animation, where a little
 personality in the motion is the point. Even then, it should be quick,
 not something that gets old after the third time you see it.
 
+## The floating call control
+
+A Meet call isn't confined to that Nest's screen — once you join, a
+small control follows you around the app so joining a call doesn't stop
+you from doing anything else, matching Meet's "drop-in, not scheduled"
+nature. It stays minimal by default (who's on, a mute toggle, a leave
+button) and only expands into the fuller call view when you choose to
+look at it — same restraint as everywhere else in the UI, just present
+regardless of which Nest you're currently viewing. A Doghouse mute has
+to show up here too, even if the person being muted has wandered off to
+another Nest — otherwise they could miss it entirely, which breaks the
+whole point of doing it out loud instead of secretly.
+
 ## Spacing
 
 Comfortable and roomy rather than packed tight — closer to a clean app

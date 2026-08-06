@@ -10,7 +10,10 @@ many Nests as they like.
 The persistent text conversation inside a Nest.
 
 **Meet**
-The drop-in voice/video call inside a Nest.
+The drop-in voice/video call inside a Nest. Once you join, it keeps
+running as a small floating control that follows you around the app —
+including while you're looking at a different Nest — until you leave it
+or the call ends.
 
 **Doghouse**
 During a call, muting someone out loud, on purpose, for everyone to see
