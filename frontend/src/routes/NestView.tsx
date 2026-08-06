@@ -1,11 +1,14 @@
-import { Link, Navigate, useParams } from 'react-router-dom'
-import { useMemo } from 'react'
+import { Navigate, Link, useParams } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Users } from 'lucide-react'
 import { MessageList } from '@/components/chat/MessageList'
 import { Composer } from '@/components/chat/Composer'
 import { ParticipantTile } from '@/components/meet/ParticipantTile'
 import { ToastStack, useToasts } from '@/components/meet/Toasts'
+import { MembersDialog } from '@/components/nest/MembersDialog'
 import { useAuth } from '@/lib/mock-auth'
 import { useNestStore, type DoghouseRejection } from '@/lib/nest-store'
+import type { Message } from '@/lib/types'
 
 const REJECTION_COPY: Record<DoghouseRejection, string> = {
   'opted-out': 'They opted out of the Doghouse — respected, no exceptions.',
@@ -19,9 +22,14 @@ export function NestView() {
   const { user } = useAuth()
   const store = useNestStore()
   const { toasts, pushToast, dismiss } = useToasts()
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null)
 
   const nest = store.nests.find((n) => n.id === nestId)
   const usersById = useMemo(() => new Map(store.users.map((u) => [u.id, u])), [store.users])
+
+  useEffect(() => {
+    setReplyingTo(null)
+  }, [nestId])
 
   if (!nest || !user) return <Navigate to="/nests" replace />
 
@@ -41,15 +49,25 @@ export function NestView() {
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex items-center gap-4 border-b border-border p-4">
-        <Link to="/nests" className="text-fg-subtle hover:text-fg-muted">
-          ←
-        </Link>
+      <header className="flex items-center gap-3 border-b border-border p-4">
         <span className="text-xl">{nest.icon}</span>
         <h1 className="text-base font-semibold">{nest.name}</h1>
-        <nav className="ml-auto flex gap-1">
-          <TabLink nestId={nest.id} view="chat" active={view === 'chat'} label="Chat" />
-          <TabLink nestId={nest.id} view="meet" active={view === 'meet'} label="Meet" />
+        <nav className="ml-auto flex items-center gap-3">
+          <MembersDialog
+            nest={nest}
+            actorUserId={user.id}
+            onRejected={pushToast}
+            trigger={
+              <button aria-label="View people" className="flex items-center gap-1 text-fg-muted hover:text-fg">
+                <Users size={16} />
+                <span className="text-xs">{nest.memberIds.length}</span>
+              </button>
+            }
+          />
+          <div className="flex gap-1">
+            <TabLink nestId={nest.id} view="chat" active={view === 'chat'} label="Chat" />
+            <TabLink nestId={nest.id} view="meet" active={view === 'meet'} label="Meet" />
+          </div>
         </nav>
       </header>
 
@@ -78,9 +96,18 @@ export function NestView() {
           <MessageList
             messages={messages}
             usersById={usersById}
+            currentUserId={user.id}
             onReact={(messageId, emoji) => store.addReaction(nest.id, messageId, emoji)}
+            onReply={setReplyingTo}
           />
-          <Composer onSend={(text) => store.sendMessage(nest.id, user.id, text)} />
+          <Composer
+            onSend={(text) => {
+              store.sendMessage(nest.id, user.id, text, replyingTo?.id ?? null)
+              setReplyingTo(null)
+            }}
+            replyingTo={replyingTo ? { message: replyingTo, author: usersById.get(replyingTo.authorId) } : null}
+            onCancelReply={() => setReplyingTo(null)}
+          />
         </>
       )}
 

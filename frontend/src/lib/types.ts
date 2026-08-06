@@ -24,6 +24,7 @@ export interface Message {
   text: string
   sentAt: string
   reactions: Reaction[]
+  replyToId: string | null
 }
 
 export interface Participant {

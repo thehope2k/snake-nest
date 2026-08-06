@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import type { Message, Nest, Participant, Reaction } from './types'
+import type { Message, Nest, Participant, Reaction, User } from './types'
 import { MOCK_MESSAGES, MOCK_NESTS, MOCK_USERS, seedParticipants } from './mock-data'
 import { useAuth } from './mock-auth'
 
@@ -9,6 +9,7 @@ const MAX_CONCURRENT_DOGHOUSE_RATIO = 0.5
 const TICK_INTERVAL_MS = 1_000
 
 export type DoghouseRejection = 'opted-out' | 'already-benched' | 'on-cooldown' | 'nest-full'
+export type RemoveMemberRejection = 'not-owner' | 'cannot-remove-owner'
 
 interface NestStoreValue {
   nests: Nest[]
@@ -17,11 +18,14 @@ interface NestStoreValue {
   messagesFor: (nestId: string) => Message[]
   participantsFor: (nestId: string) => Participant[]
   createNest: (name: string, icon: string) => Nest
-  sendMessage: (nestId: string, authorId: string, text: string) => void
+  sendMessage: (nestId: string, authorId: string, text: string, replyToId?: string | null) => void
   addReaction: (nestId: string, messageId: string, emoji: string) => void
   sendToDoghouse: (nestId: string, targetUserId: string) => DoghouseRejection | null
   releaseFromDoghouse: (nestId: string, targetUserId: string) => void
   setDoghouseOptOut: (nestId: string, userId: string, optOut: boolean) => void
+  addMember: (nestId: string, userId: string) => void
+  removeMember: (nestId: string, actorUserId: string, targetUserId: string) => RemoveMemberRejection | null
+  visibleContactsFor: (userId: string) => User[]
 }
 
 const NestStoreContext = createContext<NestStoreValue | null>(null)
@@ -73,7 +77,7 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     return nest
   }
 
-  function sendMessage(nestId: string, authorId: string, text: string) {
+  function sendMessage(nestId: string, authorId: string, text: string, replyToId: string | null = null) {
     const message: Message = {
       id: crypto.randomUUID(),
       nestId,
@@ -81,6 +85,7 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
       text,
       sentAt: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
       reactions: [],
+      replyToId,
     }
     setMessagesByNest((current) => ({ ...current, [nestId]: [...(current[nestId] ?? []), message] }))
   }
@@ -132,6 +137,50 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     }))
   }
 
+  function addMember(nestId: string, userId: string) {
+    setNests((current) =>
+      current.map((nest) =>
+        nest.id === nestId && !nest.memberIds.includes(userId)
+          ? { ...nest, memberIds: [...nest.memberIds, userId] }
+          : nest,
+      ),
+    )
+    setParticipantsByNest((current) => {
+      const participants = current[nestId] ?? []
+      if (participants.some((p) => p.userId === userId)) return current
+      const joined: Participant = { userId, doghouseUntil: null, cooldownUntil: null, doghouseOptOut: false, doghouseCount: 0 }
+      return { ...current, [nestId]: [...participants, joined] }
+    })
+  }
+
+  function removeMember(nestId: string, actorUserId: string, targetUserId: string): RemoveMemberRejection | null {
+    const nest = nests.find((n) => n.id === nestId)
+    if (!nest) return null
+    if (nest.ownerId !== actorUserId) return 'not-owner'
+    if (nest.ownerId === targetUserId) return 'cannot-remove-owner'
+
+    setNests((current) =>
+      current.map((n) => (n.id === nestId ? { ...n, memberIds: n.memberIds.filter((id) => id !== targetUserId) } : n)),
+    )
+    setParticipantsByNest((current) => ({
+      ...current,
+      [nestId]: (current[nestId] ?? []).filter((p) => p.userId !== targetUserId),
+    }))
+    return null
+  }
+
+  function visibleContactsFor(userId: string): User[] {
+    const sharedNestIds = nests.filter((nest) => nest.memberIds.includes(userId)).map((nest) => nest.id)
+    const contactIds = new Set<string>()
+    for (const nest of nests) {
+      if (!sharedNestIds.includes(nest.id)) continue
+      for (const memberId of nest.memberIds) {
+        if (memberId !== userId) contactIds.add(memberId)
+      }
+    }
+    return MOCK_USERS.filter((u) => contactIds.has(u.id))
+  }
+
   const value: NestStoreValue = {
     nests,
     users: MOCK_USERS,
@@ -144,6 +193,9 @@ export function NestStoreProvider({ children }: { children: ReactNode }) {
     sendToDoghouse,
     releaseFromDoghouse,
     setDoghouseOptOut,
+    addMember,
+    removeMember,
+    visibleContactsFor,
   }
 
   return <NestStoreContext.Provider value={value}>{children}</NestStoreContext.Provider>

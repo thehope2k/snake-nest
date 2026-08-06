@@ -26,6 +26,7 @@ export const MOCK_MESSAGES: Message[] = [
     text: 'bro lost 3 games in a row and still talking 💀',
     sentAt: '10:41 AM',
     reactions: [{ emoji: '💀', count: 12 }, { emoji: '🐍', count: 4 }],
+    replyToId: null,
   },
   {
     id: 'm-2',
@@ -34,6 +35,7 @@ export const MOCK_MESSAGES: Message[] = [
     text: 'at least I show up, unlike SOME people',
     sentAt: '10:42 AM',
     reactions: [{ emoji: '🔥', count: 6 }],
+    replyToId: 'm-1',
   },
 ]
 

@@ -1,11 +1,15 @@
-import { useState, type SubmitEvent } from 'react'
+import { useState, type ReactNode, type SubmitEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button, Dialog, DialogContent, DialogTrigger, Field, Input } from '@/components/ui'
 import { useNestStore } from '@/lib/nest-store'
 
 const NEST_ICONS = ['🐍', '📚', '🏋️', '🎮', '🎧']
 
-export function CreateNestDialog() {
+interface CreateNestDialogProps {
+  trigger?: ReactNode
+}
+
+export function CreateNestDialog({ trigger }: CreateNestDialogProps) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [icon, setIcon] = useState(NEST_ICONS[0])
@@ -24,9 +28,7 @@ export function CreateNestDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>Create a Nest</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger ?? <Button>Create a Nest</Button>}</DialogTrigger>
       <DialogContent title="Create a Nest">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Field label="Name">

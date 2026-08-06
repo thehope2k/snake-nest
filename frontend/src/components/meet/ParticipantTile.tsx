@@ -1,3 +1,4 @@
+import { Mic, MicOff } from 'lucide-react'
 import { Toggle } from '@/components/ui'
 import type { Participant, User } from '@/lib/types'
 
@@ -34,7 +35,7 @@ export function ParticipantTile({
       }`}
     >
       {isBenched && <span className="absolute right-3 top-2 text-xs font-semibold text-doghouse">{secondsLeft}s</span>}
-      <span className="text-3xl">{isBenched ? '🔇' : '🎙️'}</span>
+      {isBenched ? <MicOff size={24} className="text-doghouse" /> : <Mic size={24} className="text-fg-muted" />}
       <span className="text-4xl">{user.avatar}</span>
       <span className="text-sm font-medium">
         {user.name}

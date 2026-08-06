@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from 'react'
+import { forwardRef, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 
 export const FIELD_CHROME =
@@ -6,12 +6,12 @@ export const FIELD_CHROME =
 
 export type InputProps = InputHTMLAttributes<HTMLInputElement>
 
-export function Input({ className, ...props }: InputProps) {
-  return <input className={cn(FIELD_CHROME, className)} {...props} />
-}
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input({ className, ...props }, ref) {
+  return <input ref={ref} className={cn(FIELD_CHROME, className)} {...props} />
+})
 
 export type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
 
-export function Textarea({ className, ...props }: TextareaProps) {
-  return <textarea className={cn(FIELD_CHROME, className)} {...props} />
-}
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, ...props }, ref) {
+  return <textarea ref={ref} className={cn(FIELD_CHROME, className)} {...props} />
+})
